@@ -110,6 +110,7 @@ Es la sala de control general al entrar al sistema. Muestra un "Total Procesado"
 
 ### 5.3. Análisis BI Avanzado (`analisis_bi.html`)
 *   **Segmentación Multi-Dataset Mock**: Presenta selectores precargados con archivos emulados o parseados bajo tu sesión, y ajusta las "variables X/Y" y funciones `SUM()` al dictamen de lo procesado en tiempo real.
+*   **Inteligencia Artificial Estratégica**: Posee un triple motor de análisis de datos (Descriptivo, Predictivo y Prescriptivo) auto-ajustable a plantillas como "Ventas" o "RRHH". Para mayor detalle de los algoritmos de heurística integrados, revisar el documento anexo [ARQUITECTURA_BI.md](ARQUITECTURA_BI.md).
 *   **Gráficos Optimizados**: Chart.js nativos sobre Canvas interactivos.  
 
 ---
