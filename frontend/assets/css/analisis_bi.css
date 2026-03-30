@@ -1,24 +1,32 @@
-/* analisis_bi.css - Estilos específicos para Análisis BI */
+/* analisis_bi.css - Estilos específicos para Análisis BI Dashboard Múltiple */
 
-.text-primary-custom { color: #1A3A5F !important; }
-.text-dark-blue { color: #2c3e50 !important; }
-.bg-light-custom { background-color: #f7f9fc !important; }
+/* Dashboard Cards (Adaptadas al tema original) */
+.dash-card {
+    background: var(--surface-bg, #ffffff);
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    border: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.dash-card:hover {
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+}
 
-/* Cards KPI */
-.card-kpi { border-radius: 12px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border-top: 4px solid #1b7cf3; transition: transform 0.2s; }
-.card-kpi:hover { transform: translateY(-3px); }
+/* Filter selector */
+.filter-dataset {
+    color: var(--text-color, #4B5563) !important;
+    font-size: 0.95rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03) !important;
+    cursor: pointer;
+    border: 1px solid var(--border-color, #e2e8f0);
+}
+.filter-dataset:focus {
+    box-shadow: 0 0 0 3px rgba(27,124,243,0.2) !important;
+    border-color: #1b7cf3 !important;
+}
 
-/* Chart Cards */
-.chart-card { border-radius: 12px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.04); overflow: hidden; }
+/* Custom Scrollbar for smaller charts/overflows if needed */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 
-/* Filters */
-.filter-select { font-size: 0.95rem; border: 1px solid #e2e8f0 !important; cursor: pointer; transition: all 0.2s; }
-.filter-select:focus { box-shadow: 0 0 0 3px rgba(27,124,243,0.2) !important; border-color: #1b7cf3 !important; }
 
-/* Data Table inside card */
-.custom-data-table th { background: #f8f9fa; color: #1A3A5F; font-weight: 700; border-bottom: 2px solid #e2e8f0; padding: 12px; }
-.custom-data-table td { padding: 12px; color: #4a5568; font-weight: 500; border-bottom: 1px solid #f1f5f9; transition: background-color 0.2s; }
-.custom-data-table tbody tr:hover { background-color: #f8f9fa; }
-.custom-table-scroll { max-height: 250px; overflow-y: auto; }
-.custom-table-scroll::-webkit-scrollbar { width: 6px; }
-.custom-table-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }

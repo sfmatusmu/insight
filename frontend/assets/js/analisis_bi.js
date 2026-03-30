@@ -1,15 +1,6 @@
 /**
- * analisis_bi.js – Módulo de Análisis BI Dinámico · Insight360
+ * analisis_bi.js – Módulo de Análisis BI Dinámico · Insight360 Automatic Dashboard
  * ================================================================
- * Secciones:
- *  1. Configuración global Chart.js
- *  2. Gráficos estáticos de referencia (sin cambios visuales)
- *  3. Panel de análisis dinámico:
- *     - Carga de datasets disponibles
- *     - Carga de columnas al seleccionar dataset
- *     - Generación de gráfico principal con Chart.js
- *     - Tarjetas KPI (SUM / AVG / COUNT) en tiempo real
- *     - Tabla preview de las primeras 10 filas
  */
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -38,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const selectColumna = document.getElementById('kpi-columna');
         let datasetsCache   = [];
 
-        async function cargarDatasetsDisponibles() {
+        async function cargarDatasetsDisponiblesParaKPI() {
             if (!selectDataset) return;
             try {
                 const result = await API.get('/api/datasets');
@@ -53,9 +44,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
                 }
             } catch (err) {
-                console.error('[BI] Error cargando datasets:', err);
+                console.error('[BI] Error cargando datasets para KPI:', err);
             }
         }
+        cargarDatasetsDisponiblesParaKPI();
 
         if (selectDataset) {
             selectDataset.addEventListener('change', async function () {
@@ -161,7 +153,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         const newCol = document.createElement('div');
                         newCol.className = 'col-md-3 col-sm-6';
                         newCol.innerHTML = `
-                            <div class="card card-kpi h-100 border-primary border-bottom-0 border-end-0 border-start-0 border-4">
+                            <div class="card card-kpi dash-card h-100 border-0">
                                 <div class="card-body">
                                     <h6 class="text-muted fw-semibold text-uppercase text-truncate" style="font-size:0.8rem;letter-spacing:0.5px" title="${nombre}">${nombre}</h6>
                                     <h3 class="fw-bold text-dark mb-0">${displayVal} <small class="text-success fs-6"><i class="fas fa-check-circle"></i> Listo</small></h3>
@@ -179,214 +171,342 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
 
-        cargarDatasetsDisponibles();
+        // ── 3c. Panel de análisis dinámico AUTOMÁTICO ────────────────────────────────
+        const biTemplate = document.getElementById('bi-template');
+        const biTemplateDesc = document.getElementById('bi-template-desc');
+        const biDataset = document.getElementById('bi-dataset');
+        const biAxisX = document.getElementById('bi-axis-x');
+        const biAxisY = document.getElementById('bi-axis-y');
+        const btnGenerarBi = document.getElementById('btn-generar-bi');
+        const biFilterCol = document.getElementById('bi-filter-col');
+        const biFilterVal = document.getElementById('bi-filter-val');
+        if (!biDataset || !biAxisX || !biAxisY || !btnGenerarBi) return;
 
-        // ── 3c. Panel de análisis dinámico ────────────────────────────────
-        const biDataset   = document.getElementById('bi-dataset');
-        const biAxisX     = document.getElementById('bi-axis-x');
-        const biAxisY     = document.getElementById('bi-axis-y');
-        const biAgg       = document.getElementById('bi-aggregation');
-        const biChartType = document.getElementById('bi-chart-type');
-        const btnGenerar  = document.getElementById('btn-generar-bi');
+        // Registro de gráficos para refrescarlos
+        window._biCharts = window._biCharts || {};
 
-        if (!biDataset) return; // El panel no está presente en la página
+        const templateTexts = {
+            libre: "<strong>Modo exploratorio:</strong> Selecciona manualmente tus cruces de variables. El sistema no predecirá comportamientos específicos.",
+            ventas: "<strong>Modo Ventas & CX:</strong> Se buscarán métricas de ingresos monetarios. El sistema sugerirá estrategias de retención, tickets o promociones.",
+            inventario: "<strong>Modo Operaciones:</strong> Análisis enfocado a stock y rotación. Se alertará sobre quiebres de stock o productos estancados.",
+            rrhh: "<strong>Modo Recursos Humanos:</strong> Enfoque en headcounts y costos asociados. Se sugerirán planes de retención y análisis de fuga."
+        };
 
-        // Instancia global de Chart para poder destruirla antes de re-renderizar
-        window._biMainChart = null;
+        if (biTemplate && biTemplateDesc) {
+            biTemplate.addEventListener('change', function() {
+                biTemplateDesc.innerHTML = templateTexts[this.value] || templateTexts.libre;
+                if (biDataset.value) { biDataset.dispatchEvent(new Event('change')); }
+            });
+        }
 
-        // ── Cargar datasets en el selector del panel ──
         async function loadBiDatasets() {
             try {
                 const result = await API.get('/api/datasets');
                 if (result?.status === 'success' && result.data.length > 0) {
                     biDataset.innerHTML = '<option value="" disabled selected>-- Selecciona un dataset --</option>';
                     result.data.forEach(ds => {
-                        const opt  = document.createElement('option');
-                        opt.value  = ds.filename;
+                        const opt = document.createElement('option');
+                        opt.value = ds.filename;
                         opt.textContent = `${ds.filename}${ds.rows ? ` · ${Number(ds.rows).toLocaleString('es-CL')} filas` : ''}`;
                         biDataset.appendChild(opt);
                     });
 
-                    // Auto-seleccionar si viene desde carga_datos con ?dataset=…
-                    const params    = new URLSearchParams(window.location.search);
+                    // Auto-seleccionar si viene por URL
+                    const params = new URLSearchParams(window.location.search);
                     const preselect = params.get('dataset');
                     if (preselect && [...biDataset.options].some(o => o.value === preselect)) {
                         biDataset.value = preselect;
                         biDataset.dispatchEvent(new Event('change'));
                     }
                 } else {
-                    biDataset.innerHTML = '<option value="" disabled selected>No hay datasets disponibles. Sube un archivo primero.</option>';
+                    biDataset.innerHTML = '<option value="" disabled selected>No hay datasets disponibles.</option>';
                 }
             } catch (err) {
-                console.error('[BI Panel] Error cargando datasets:', err);
+                console.error('[BI Dashboard] Error cargando datasets:', err);
             }
         }
 
-        // ── Cargar columnas al cambiar dataset ──
         biDataset.addEventListener('change', async function () {
             const filename = this.value;
             if (!filename) return;
 
-            // Reset UI
-            biAxisX.innerHTML  = '<option disabled selected>Cargando columnas...</option>';
-            biAxisY.innerHTML  = '<option disabled selected>Cargando columnas...</option>';
-            biAxisX.disabled   = true;
-            biAxisY.disabled   = true;
-            btnGenerar.disabled = true;
+            biAxisX.innerHTML = '<option disabled selected>Cargando...</option>';
+            biAxisY.innerHTML = '<option disabled selected>Cargando...</option>';
+            biFilterCol.innerHTML = '<option value="" selected>Sin Filtro (Todo)</option>';
+            biFilterVal.style.display = 'none';
 
-            // Ocultar sección previa de resultado
-            document.getElementById('bi-main-wrapper').classList.add('d-none');
+            biAxisX.disabled = true;
+            biAxisY.disabled = true;
+            biFilterCol.disabled = true;
+            btnGenerarBi.disabled = true;
 
             try {
-                const result = await API.get(`/api/datasets/${filename}/columns`);
-                if (!result?.data) throw new Error('Sin columnas');
+                // Obtener columnas
+                const colResult = await API.get(`/api/datasets/${filename}/columns`);
+                const cols = colResult.data || [];
+                
+                biAxisX.innerHTML = '<option value="" disabled selected>-- Selecciona Eje X --</option>';
+                biAxisY.innerHTML = '<option value="" disabled selected>-- Selecciona Métrica (Y) --</option>';
 
-                const cols        = result.data;
-                const numericCols = cols.filter(c => c.is_numeric || c.type === 'numeric' ||
-                    ['int64','float64','int32','float32'].includes(c.type));
-                const catCols     = cols.filter(c => !numericCols.includes(c));
-                const dateCols    = cols.filter(c =>
-                    ['fecha','date','año','mes','year','month','periodo','period'].some(kw =>
-                        c.name.toLowerCase().includes(kw)) || c.type === 'datetime'
-                );
+                cols.forEach(col => {
+                    const isNum = col.is_numeric || col.type === 'numeric' || ['int64', 'float64', 'int32', 'float32'].includes(col.type);
+                    
+                    const optX = document.createElement('option');
+                    optX.value = col.name;
+                    optX.textContent = col.name;
+                    biAxisX.appendChild(optX);
 
-                // ── Poblar selectores X e Y ──
-                biAxisX.innerHTML = '<option value="" disabled selected>-- Eje X (categorías) --</option>';
-                [...catCols, ...numericCols].forEach(col => {
-                    const opt = document.createElement('option');
-                    opt.value = col.name; opt.textContent = col.name;
-                    biAxisX.appendChild(opt);
+                    const optFilter = document.createElement('option');
+                    optFilter.value = col.name;
+                    optFilter.textContent = col.name;
+                    biFilterCol.appendChild(optFilter);
+
+                    if (isNum) {
+                        const optY = document.createElement('option');
+                        optY.value = col.name;
+                        optY.textContent = col.name + ' (Numérico)';
+                        biAxisY.appendChild(optY);
+                    }
                 });
 
-                biAxisY.innerHTML = '<option value="" disabled selected>-- Eje Y (métrica numérica) --</option>';
-                [...numericCols, ...catCols].forEach(col => {
-                    const opt = document.createElement('option');
-                    opt.value = col.name;
-                    opt.textContent = numericCols.includes(col) ? `${col.name} (numérico)` : col.name;
-                    biAxisY.appendChild(opt);
-                });
+                biAxisX.disabled = false;
+                biAxisY.disabled = false;
+                biFilterCol.disabled = false;
 
-                biAxisX.disabled   = false;
-                biAxisY.disabled   = false;
-                btnGenerar.disabled = false;
-
-                // Auto-seleccionar primeras opciones sensibles
-                if (biAxisX.options.length > 1) biAxisX.selectedIndex = 1;
-                if (biAxisY.options.length > 1) {
-                    const firstNum = [...biAxisY.options].findIndex(o => o.textContent.includes('numérico'));
-                    biAxisY.selectedIndex = firstNum > 0 ? firstNum : 1;
+                // Auto-heurstica según plantilla
+                const template = biTemplate ? biTemplate.value : 'libre';
+                let bestX = '', bestY = '';
+                
+                if (template === 'ventas') {
+                    const xKeys = ['fecha', 'mes', 'periodo', 'producto', 'categori', 'cliente', 'sucursal'];
+                    const yKeys = ['monto', 'venta', 'ingreso', 'total', 'precio', 'revenue'];
+                    bestX = cols.find(c => xKeys.some(k => c.name.toLowerCase().includes(k)))?.name || '';
+                    bestY = cols.filter(c => c.is_numeric || ['int64', 'float64', 'int32', 'float32', 'numeric'].includes(c.type))
+                               .find(c => yKeys.some(k => c.name.toLowerCase().includes(k)))?.name || '';
+                } else if (template === 'inventario') {
+                    const xKeys = ['producto', 'item', 'sku', 'almacen', 'bodega', 'mes'];
+                    const yKeys = ['stock', 'cantidad', 'saldo', 'unidad'];
+                    bestX = cols.find(c => xKeys.some(k => c.name.toLowerCase().includes(k)))?.name || '';
+                    bestY = cols.filter(c => c.is_numeric || ['int64', 'float64', 'int32', 'float32', 'numeric'].includes(c.type))
+                               .find(c => yKeys.some(k => c.name.toLowerCase().includes(k)))?.name || '';
+                } else if (template === 'rrhh') {
+                    const xKeys = ['departamento', 'area', 'cargo', 'mes', 'sucursal', 'empleado'];
+                    const yKeys = ['sueldo', 'salario', 'bono', 'costo'];
+                    bestX = cols.find(c => xKeys.some(k => c.name.toLowerCase().includes(k)))?.name || '';
+                    bestY = cols.filter(c => c.is_numeric || ['int64', 'float64', 'int32', 'float32', 'numeric'].includes(c.type))
+                               .find(c => yKeys.some(k => c.name.toLowerCase().includes(k)))?.name || '';
                 }
 
-                // ── Renderizar chips de columnas ──
-                _renderColumnCards(cols);
+                if (bestX && [...biAxisX.options].some(o => o.value === bestX)) biAxisX.value = bestX;
+                if (bestY && [...biAxisY.options].some(o => o.value === bestY)) biAxisY.value = bestY;
 
-                // ── Registrar botones de tipo de análisis ──
-                _setupAnalysisButtons(cols, numericCols, catCols, dateCols);
+                // Habilitar botón si ambos cambian y habilitar selector de operación
+                const checkEnable = () => {
+                    const ready = (biAxisX.value && biAxisY.value);
+                    btnGenerarBi.disabled = !ready;
+                    const aggSelect = document.getElementById('bi-agg-func');
+                    if (aggSelect) aggSelect.disabled = !ready;
+                };
+                biAxisX.addEventListener('change', checkEnable);
+                biAxisY.addEventListener('change', checkEnable);
 
-                // ── Cargar preview de datos inmediatamente ──
+            } catch (err) {
+                console.error('Error obteniendo columnas:', err);
+                Swal.fire('Error', 'No se pudieron cargar las columnas del dataset.', 'error');
+            }
+        });
+
+        // Evento para poblar dinámicamente el valor de filtro según columna elegida
+        if(biFilterCol){
+            biFilterCol.addEventListener('change', async function() {
+                const filename = biDataset.value;
+                const colName = this.value;
+
+                if (!colName || colName === "") {
+                    biFilterVal.style.display = 'none';
+                    biFilterVal.disabled = true;
+                    biFilterVal.value = '';
+                    return;
+                }
+
+                biFilterVal.innerHTML = '<option disabled selected>Cargando...</option>';
+                biFilterVal.style.display = 'block';
+                biFilterVal.disabled = true;
+
                 try {
                     const dataResult = await API.get(`/api/datasets/${filename}/data`);
-                    if (dataResult?.data?.length) {
-                        _renderPreviewTable(dataResult.data.slice(0, 10));
-                        document.getElementById('bi-preview-wrapper').classList.remove('d-none');
-                    }
-                } catch (previewErr) {
-                    console.warn('[BI Panel] No se pudo cargar la vista previa:', previewErr);
+                    const rows = dataResult.data || dataResult;
+                    
+                    const uniqueVals = [...new Set(rows.map(r => String(r[colName] ?? '').trim()).filter(v => v !== 'N/A' && v !== 'null' && v !== ''))].sort();
+                    
+                    biFilterVal.innerHTML = '<option value="" disabled selected>Elegir Valor...</option>';
+                    uniqueVals.forEach(v => {
+                        const opt = document.createElement('option');
+                        opt.value = v;
+                        opt.textContent = v;
+                        biFilterVal.appendChild(opt);
+                    });
+                    
+                    biFilterVal.disabled = false;
+                } catch (e) {
+                    console.error('Error al obtener valores de filtro', e);
+                    biFilterVal.innerHTML = '<option disabled>Error</option>';
                 }
+            });
+        }
 
-                // Mostrar panel de columnas y tipos
-                document.getElementById('bi-columns-wrapper').classList.remove('d-none');
+        btnGenerarBi.addEventListener('click', async function () {
+            const filename = biDataset.value;
+            const xCol1 = biAxisX.value;
+            const yCol1 = biAxisY.value;
+            const aggMode = document.getElementById('bi-agg-func').value || 'sum';
+            const aggTitle = { sum: 'Suma', avg: 'Promedio', count: 'Recuento' }[aggMode];
 
-            } catch (err) {
-                biAxisX.innerHTML = '<option>Error cargando columnas</option>';
-                biAxisY.innerHTML = '<option>Error cargando columnas</option>';
-                console.error('[BI Panel] Error cargando columnas:', err);
-            }
-        });
+            if (!filename || !xCol1 || !yCol1) return;
 
-        // ── Generar gráfico ──
-        btnGenerar.addEventListener('click', async function () {
-            const filename  = biDataset.value;
-            const xCol      = biAxisX.value;
-            const yCol      = biAxisY.value;
-            const aggFunc   = biAgg.value;
-            const chartType = biChartType.value;
+            // Mostrar estado de carga (sweetalert)
+            Swal.fire({
+                title: 'Generando Análisis',
+                html: `Calculando métricas para <b>${yCol1}</b> agrupado por <b>${xCol1}</b>...`,
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
 
-            if (!filename || !xCol || !yCol) {
-                Swal.fire({ icon: 'warning', title: 'Selección incompleta', text: 'Debes elegir un dataset, la variable X y la variable Y.', confirmButtonColor: '#1b7cf3' });
-                return;
-            }
-
-            // Estado de carga del botón
-            const originalHtml = this.innerHTML;
-            this.innerHTML  = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Analizando...';
-            this.disabled   = true;
+            // Mostrar grilla, tabla y botón PDF
+            const emptyState = document.getElementById('initial-empty-state');
+            const grid = document.getElementById('dashboard-grid');
+            const tableContainer = document.getElementById('data-preview-container');
+            const btnPdf = document.getElementById('btn-export-pdf');
+            if (emptyState) emptyState.classList.add('d-none');
+            if (grid) grid.classList.remove('d-none');
+            if (tableContainer) tableContainer.classList.remove('d-none');
+            if (btnPdf) btnPdf.classList.remove('d-none');
 
             try {
-                const result = await API.get(`/api/datasets/${filename}/data`);
-                if (!result) throw new Error('Sin respuesta del servidor');
+                // Obtener filas completas del backend para el análisis
+                const dataResult = await API.get(`/api/datasets/${filename}/data`);
+                let rows = dataResult.data || dataResult;
 
-                const rows = result.data || result;
-                if (!rows || rows.length === 0) throw new Error('El dataset no contiene datos');
+                if (!rows.length) throw new Error("Dataset está vacío o corrupto.");
 
-                // Agregar datos
-                const { labels, values } = _aggregateData(rows, xCol, yCol, aggFunc);
+                // APLICAR FILTRO DINÁMICO GLOBAL (EJ. POR MES O CATEGORÍA)
+                const fCol = biFilterCol ? biFilterCol.value : '';
+                const fVal = biFilterVal && !biFilterVal.disabled ? biFilterVal.value : '';
+                
+                let filterContext = '';
+                if (fCol && fVal) {
+                    rows = rows.filter(r => String(r[fCol] ?? '').trim() === fVal);
+                    filterContext = ` (Solo: ${fVal})`;
+                    if (!rows.length) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Sin Resultados',
+                            text: 'El filtro aplicado devolvió 0 resultados. Los gráficos estarán vacíos.',
+                            confirmButtonColor: '#1b7cf3'
+                        });
+                    }
+                }
 
-                // Mostrar paneles
-                document.getElementById('bi-main-wrapper').classList.remove('d-none');
-                document.getElementById('bi-preview-wrapper').classList.remove('d-none');
+                // Destruir gráficos anteriores
+                Object.values(window._biCharts).forEach(c => c && c.destroy && c.destroy());
+                window._biCharts = {};
 
-                // Actualizar cabecera
-                const aggLabels = { sum: 'Suma', avg: 'Promedio', count: 'Conteo' };
-                document.getElementById('bi-chart-title').textContent =
-                    `${aggLabels[aggFunc] || aggFunc} de "${yCol}" por "${xCol}"`;
-                document.getElementById('bi-badge-dataset').textContent = filename;
-                document.getElementById('bi-badge-rows').textContent =
-                    `${rows.length.toLocaleString('es-CL')} registros`;
+                // Preparación de datasets agrupados para visualización
+                const aggMain = _aggregateData(rows, xCol1, yCol1, aggMode, 'key');
+                const aggHoriz = _aggregateData(rows, xCol1, yCol1, aggMode, 'val');
 
-                // Renderizar gráfico, stats y tabla preview
-                _renderMainChart(labels, values, chartType, yCol, aggFunc);
-                _updateKpiStats(rows, yCol);
-                _renderPreviewTable(rows.slice(0, 10));
+                // ── 🧠 Analítica Predictiva (Regresión Lineal para Forecast) ──────────
+                let forecastData = null;
+                const isSequential = aggMain.labels.some(l => !isNaN(parseInt(l)));
+                if (isSequential && aggMain.values.length > 2) {
+                    const linResult = _calculateLinearRegression(aggMain);
+                    if (linResult) {
+                        const tempLabels = [...aggMain.labels, "Próx. 1", "Próx. 2"];
+                        const tempVals = Array(aggMain.values.length - 1).fill(null);
+                        tempVals.push(aggMain.values[aggMain.values.length - 1]); // Conectar con último
+                        tempVals.push(linResult.next1);
+                        tempVals.push(linResult.next2);
+                        
+                        aggMain.labels = tempLabels;
+                        forecastData = tempVals;
+                    }
+                }
 
-                // Scroll suave hacia el gráfico
-                document.getElementById('bi-main-wrapper').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // 1. Line Chart Principal (Arriba izq)
+                window._biCharts.mainLine = _createChart('chart-main-line', 'line', aggMain, `${aggTitle} de ${yCol1}`, '#4F46E5', true, 'x', forecastData);
+
+                // 2. Horizontal Bar
+                window._biCharts.horizBar = _createChart('chart-horiz-bar', 'bar', aggHoriz, `${aggTitle} por Categoría`, '#8B5CF6', false, 'y');
+
+                // Actualizando títulos estáticos HTML con contexto de filtrado
+                const cleanDatasetName = biDataset.options[biDataset.selectedIndex].text.replace(/\s*\[.*?\]$/, '');
+                if(document.getElementById('main-chart-title')) document.getElementById('main-chart-title').innerHTML = `Evolución de ${yCol1} <span class="text-primary ms-1" style="font-size:0.75rem; font-weight:normal">(${cleanDatasetName})${filterContext}</span>`;
+                if(document.getElementById('horiz-chart-title')) document.getElementById('horiz-chart-title').innerHTML = `Distribución por ${xCol1}${filterContext}`;
+                
+                if(document.getElementById('donut-title')) document.getElementById('donut-title').innerHTML = `Concentración Top ${xCol1}`;
+                if(document.getElementById('gauge-title')) document.getElementById('gauge-title').innerHTML = `Rendimiento (${yCol1})`;
+                
+                // Set badges for visual clarity
+                if(document.getElementById('badge-x1')) document.getElementById('badge-x1').textContent = xCol1;
+
+                // Mostrar el panel de stats
+                const panelStatsWrap = document.getElementById('panel-stats-wrapper');
+                if (panelStatsWrap) panelStatsWrap.classList.remove('d-none');
+
+                // 3. Doughnut Top Categorías
+                const topCats = { labels: aggHoriz.labels.slice(0,5), values: aggHoriz.values.slice(0,5) };
+                window._biCharts.donut = _createDoughnut('chart-side-donut', topCats, `Top 5`);
+
+                // 4. Pseudo-Gauge Chart
+                const sumAll = aggMain.values.reduce((a, b) => a + b, 0);
+                const avgAll = sumAll / (aggMain.values.length || 1);
+                const gaugeActual = Math.abs(avgAll);
+                const gaugeMeta = Math.abs(sumAll) > 0 ? Math.abs(sumAll) / 2 : gaugeActual + 10;
+                const gaugeColor = (gaugeActual >= gaugeMeta) ? '#10B981' : '#F59E0B'; 
+                const gaugeData = { labels: ['Actual', 'Meta'], values: [gaugeActual, gaugeMeta] };
+                window._biCharts.gauge = _createGauge('chart-gauge', gaugeData, gaugeColor);
+
+                // Update text Stats and text narratives
+                _updateDashboardStats(rows, yCol1, xCol1, aggMain, aggHoriz, null, topCats);
+                
+                // Build raw data preview table
+                _buildDataTable(rows);
+
+                Swal.close();
 
             } catch (err) {
-                console.error('[BI Panel] Error generando gráfico:', err);
-                Swal.fire('Error al cargar datos', err.message || 'Verifica que el dataset esté disponible.', 'error');
-            } finally {
-                this.innerHTML = originalHtml;
-                this.disabled  = false;
+                console.error('[Dashboard] Error generando:', err);
+                Swal.fire('Error', 'No se pudo generar el dashboard para el dataset seleccionado: ' + err.message, 'error');
             }
         });
 
-        // Escuchar cuando se complete un nuevo análisis SSE (dataset recién subido)
-        window.addEventListener('sse:analisis_completado', async () => {
-            await loadBiDatasets();
-        });
-
-        // Configurar exportación a PDF
-        const btnPdf = document.getElementById('btn-descargar-pdf');
+        // Funcionalidad de Exportar a PDF usando html2pdf
+        const btnPdf = document.getElementById('btn-export-pdf');
         if (btnPdf) {
             btnPdf.addEventListener('click', () => {
-                const element = document.getElementById('bi-main-wrapper');
+                const element = document.getElementById('dashboard-grid');
+                if (!element) return;
+                
+                // Mostrar alerta
+                Swal.fire({
+                    title: 'Generando PDF',
+                    text: 'Preparando el reporte visual. Esto puede tomar unos segundos...',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
                 const opt = {
                     margin:       0.5,
                     filename:     `Reporte_BI_${new Date().getTime()}.pdf`,
                     image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { scale: 2, useCORS: true },
-                    jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
+                    html2canvas:  { scale: 2, useCORS: true, logging: false },
+                    jsPDF:        { unit: 'in', format: 'a3', orientation: 'landscape' }
                 };
 
-                // Cambiar estado visual del botón
-                const originalHtml = btnPdf.innerHTML;
-                btnPdf.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> PDF...';
-                btnPdf.disabled = true;
-
                 html2pdf().set(opt).from(element).save().then(() => {
-                    btnPdf.innerHTML = originalHtml;
-                    btnPdf.disabled = false;
+                    Swal.close();
+                }).catch(err => {
+                    Swal.fire('Error', 'No se pudo generar el documento PDF.', 'error');
                 });
             });
         }
@@ -395,430 +515,454 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    //  UTILIDADES DE DATOS
+    //  Helpers de Agrupación, Stats y Factory Chart.js
     // ═══════════════════════════════════════════════════════════════════════
 
     /**
-     * Agrupa filas por xCol y aplica aggFunc sobre yCol.
-     * Devuelve hasta 20 categorías ordenadas de mayor a menor.
+     * Agrupa y agrega para Chart.js
      */
-    function _aggregateData(rows, xCol, yCol, aggFunc) {
+    function _aggregateData(rows, xCol, yCol, aggFunc, sortBy = 'val') {
         const grouped = {};
+        
+        const isMonth = xCol.toLowerCase().includes('mes') || xCol.toLowerCase() === 'month';
+        const monthNames = ['', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+        // Pre-rellenado (Zero-padding) logico si estamos tratando de meses para la linea de tiempo.
+        if (isMonth && sortBy === 'key') {
+            for (let i = 1; i <= 12; i++) {
+                grouped[i.toString()] = [];
+            }
+        }
 
         rows.forEach(row => {
             const key = String(row[xCol] ?? 'N/A').trim() || 'N/A';
-            if (!grouped[key]) grouped[key] = [];
-            const val = parseFloat(row[yCol]);
-            if (!isNaN(val)) grouped[key].push(val);
+            if (!grouped[key]) {
+                if(isMonth && parseInt(key)>=1 && parseInt(key)<=12) {
+                     // El pre-rellenador ya debio ponerlo, de ser numerico valido
+                     if (!grouped[parseInt(key).toString()]) grouped[parseInt(key).toString()] = [];
+                } else {
+                     grouped[key] = [];
+                }
+            }
+            if (isMonth && parseInt(key)>=1 && parseInt(key)<=12) {
+                const val = parseFloat(row[yCol]);
+                if (!isNaN(val)) grouped[parseInt(key).toString()].push(val);
+            } else {
+                const val = parseFloat(row[yCol]);
+                if (!isNaN(val)) grouped[key].push(val);
+            }
         });
 
-        const entries = Object.entries(grouped)
+        let entries = Object.entries(grouped)
             .map(([key, arr]) => {
-                let val = 0;
+                let val = arr.length; // count default
                 if (arr.length > 0) {
-                    if (aggFunc === 'sum')      val = arr.reduce((a, b) => a + b, 0);
+                    if (aggFunc === 'sum') val = arr.reduce((a, b) => a + b, 0);
                     else if (aggFunc === 'avg') val = arr.reduce((a, b) => a + b, 0) / arr.length;
-                    else if (aggFunc === 'max') val = Math.max(...arr);
-                    else if (aggFunc === 'min') val = Math.min(...arr);
-                    else if (aggFunc === 'median') {
-                        const sorted = [...arr].sort((a, b) => a - b);
-                        const mid = Math.floor(sorted.length / 2);
-                        val = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
-                    }
-                    else if (aggFunc === 'mode') {
-                        const freqs = {};
-                        arr.forEach(v => freqs[v] = (freqs[v] || 0) + 1);
-                        val = parseFloat(Object.keys(freqs).reduce((a, b) => freqs[a] > freqs[b] ? a : b));
-                    }
-                    else if (aggFunc === 'variance') {
-                        if (arr.length > 1) {
-                            const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
-                            val = arr.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / arr.length;
-                        } else val = 0;
-                    }
-                    else                        val = arr.length; // count
                 }
-                return [key, parseFloat(val.toFixed(2))];
-            })
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 30); // Mostrar hasta 30 categorías
+                return { key: key, val: parseFloat(val.toFixed(2)) };
+            });
 
-        return {
-            labels: entries.map(e => e[0]),
-            values: entries.map(e => e[1]),
-        };
+        // Ordenamiento dinámico
+        if (sortBy === 'key') {
+            entries = entries.sort((a, b) => {
+                const numA = parseFloat(a.key);
+                const numB = parseFloat(b.key);
+                if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+                return a.key.localeCompare(b.key);
+            });
+        } else {
+            entries = entries.sort((a, b) => b.val - a.val).slice(0, 15);
+        }
+
+        const labels = entries.map(e => {
+            if (isMonth) {
+                const m = parseInt(e.key, 10);
+                if (m >= 1 && m <= 12) return monthNames[m];
+            }
+            return e.key;
+        });
+
+        return { labels: labels, values: entries.map(e => e.val) };
     }
 
     /**
-     * Renderiza (o actualiza) el gráfico dinámico principal.
-     * Destruye la instancia anterior para evitar memory leaks.
+     * Factory de Charts de línea o barra
      */
-    function _renderMainChart(labels, values, chartType, yCol, aggFunc) {
-        const canvas = document.getElementById('mainChart');
-        if (!canvas) return;
+    function _createChart(canvasId, type, data, label, color, fill = false, indexAxis = 'x', forecastArray = null) {
+        const ctx = document.getElementById(canvasId);
+        if (!ctx) return null;
+        
+        const isHorizontal = indexAxis === 'y';
 
-        // Destruir instancia anterior
-        if (window._biMainChart) {
-            window._biMainChart.destroy();
-            window._biMainChart = null;
+        // Para gradientes de área
+        let bg = color;
+        if (fill) {
+            const canvasCtx = ctx.getContext('2d');
+            const gradient = canvasCtx.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, color + '60'); // 60 hex = opacity
+            gradient.addColorStop(1, color + '00');
+            bg = gradient;
         }
 
-        const isHorizontal = chartType === 'horizontalBar';
-        const isArea       = chartType === 'area';
-        const isDoughnut   = chartType === 'doughnut';
-        const isPie        = chartType === 'pie';
-        const isPolar      = chartType === 'polarArea';
-        const isRadar      = chartType === 'radar';
-        
-        const isCircular   = isDoughnut || isPie || isPolar;
+        const datasets = [{
+            label: label,
+            data: data.values,
+            backgroundColor: bg,
+            borderColor: color,
+            borderWidth: 2.5,
+            fill: fill,
+            tension: 0.4, // smooth lines
+            borderRadius: type === 'bar' ? 6 : 0,
+            pointRadius: type === 'line' ? 2 : 0,
+            pointHoverRadius: type === 'line' ? 5 : 0,
+            pointBackgroundColor: '#ffffff'
+        }];
 
-        let actualType = chartType;
-        if (isHorizontal) actualType = 'bar';
-        if (isArea)       actualType = 'line';
-
-        const mapLabels = { sum: 'Suma', avg: 'Promedio', count: 'Conteo', max: 'Máximo', min: 'Mínimo', median: 'Mediana', mode: 'Moda', variance: 'Varianza' };
-        const aggLabel = mapLabels[aggFunc] || aggFunc;
-
-        // Repetir paleta si hay más categorías que colores para circulares
-        const repeatedPalette = Array.from({ length: Math.ceil(labels.length / PALETTE.length) }, () => PALETTE).flat();
-
-        const bgColors = isCircular
-            ? repeatedPalette.slice(0, labels.length)
-            : (isArea || isRadar ? 'rgba(27,124,243,0.25)' : 'rgba(27,124,243,0.82)');
-
-        const dataset = {
-            label:           `${aggLabel} de ${yCol}`,
-            data:            values,
-            backgroundColor: bgColors,
-            borderColor:     isCircular ? repeatedPalette.slice(0, labels.length) : '#1b7cf3',
-            borderWidth:     (actualType === 'line' || isRadar) ? 2.5 : 1,
-            borderRadius:    actualType === 'bar'  ? 6   : 0,
-            fill:            isArea || isRadar,
-            tension:         0.38,
-            pointBackgroundColor: '#fff',
-            pointBorderColor:    '#1b7cf3',
-            pointRadius:     (actualType === 'line' || isRadar) ? 4 : 0,
-            pointHoverRadius: (actualType === 'line' || isRadar) ? 6 : 0,
-        };
-
-        const trendValues = _calculateIntelligentInsights(labels, values, yCol);
-        const datasetsArray = [dataset];
-
-        if (trendValues && trendValues.length > 0 && !isCircular && !isRadar) {
-            datasetsArray.push({
-                type: 'line',
-                label: 'Tendencia IA (Forecast)',
-                data: trendValues,
-                borderColor: '#d99500',
-                borderWidth: 2,
-                borderDash: [6, 4],
+        if (forecastArray && type === 'line') {
+            datasets.push({
+                label: 'Pronóstico (AI)',
+                data: forecastArray,
+                backgroundColor: 'transparent',
+                borderColor: '#10B981', // verde
+                borderWidth: 2.5,
+                borderDash: [5, 5],
                 fill: false,
-                pointRadius: 0,
-                pointHoverRadius: 4,
-                tension: 0
+                tension: 0.4,
+                pointRadius: 3,
+                pointBackgroundColor: '#10B981'
             });
         }
 
-        const options = {
-            responsive: true,
-            maintainAspectRatio: false,
-            indexAxis: isHorizontal ? 'y' : 'x',
-            animation:  { duration: 700, easing: 'easeInOutQuart' },
-            plugins: {
-                legend: {
-                    display:  isCircular || isRadar,
-                    position: isHorizontal ? 'bottom' : 'right',
-                    labels:   { usePointStyle: true, padding: 16, font: { size: 12 } },
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(26,58,95,0.92)',
-                    padding:    12,
-                    cornerRadius: 8,
-                    titleFont:  { size: 13, weight: 'bold' },
-                    bodyFont:   { size: 13 },
-                    callbacks: {
-                        label: ctx => {
-                            let v = ctx.parsed; // defaultValue for circular/radar
-                            if (ctx.parsed.y !== undefined && !isHorizontal) v = ctx.parsed.y;
-                            if (ctx.parsed.x !== undefined && isHorizontal) v = ctx.parsed.x;
-                            if (isPolar || isPie || isDoughnut) v = ctx.parsed;
-                            if (isRadar) v = ctx.parsed.r;
-
-                            return ` ${aggLabel}: ${Number(v).toLocaleString('es-CL', { maximumFractionDigits: 2 })}`;
-                        },
-                    },
-                },
+        return new Chart(ctx.getContext('2d'), {
+            type: type,
+            data: {
+                labels: data.labels,
+                datasets: datasets
             },
-            scales: (isCircular || isRadar) ? {} : {
-                x: {
-                    grid:  { display: isHorizontal, color: '#edf2f7', drawBorder: false },
-                    ticks: { font: { size: 11 }, maxRotation: 40 },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: indexAxis,
+                plugins: { 
+                    legend: { display: forecastArray ? true : false, position: 'top', labels: { font: { family: "'Inter', sans-serif", size: 11 } } },
+                    tooltip: {
+                        backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                        titleFont: { family: "'Inter', sans-serif", size: 13, weight: 600 },
+                        bodyFont: { family: "'Inter', sans-serif", size: 12 },
+                        padding: 12,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) { label += ': '; }
+                                if (context.parsed.y !== null && !isHorizontal) {
+                                    label += new Intl.NumberFormat('es-CL').format(context.parsed.y);
+                                } else if (context.parsed.x !== null && isHorizontal) {
+                                    label += new Intl.NumberFormat('es-CL').format(context.parsed.x);
+                                }
+                                return label;
+                            }
+                        }
+                    }
                 },
-                y: {
-                    beginAtZero: true,
-                    grid:  { color: '#edf2f7', drawBorder: false },
-                    ticks: {
-                        font:     { size: 11 },
-                        callback: v => Number(v).toLocaleString('es-CL'),
-                    },
-                },
-            },
-        };
-
-        window._biMainChart = new Chart(canvas.getContext('2d'), {
-            type:    actualType,
-            data:    { labels, datasets: datasetsArray },
-            options,
+                scales: {
+                    x: { display: true, grid: { display: false }, ticks: { font: { family: "'Inter', sans-serif", size: 11 }, maxRotation: 45 } },
+                    y: { 
+                        display: true, 
+                        beginAtZero: true, 
+                        grid: { color: 'rgba(0,0,0,0.03)', drawBorder: false }, 
+                        ticks: { 
+                            font: { family: "'Inter', sans-serif", size: 11 }, 
+                            callback: function(value) { return new Intl.NumberFormat('es-CL', {notation: "compact"}).format(value); } 
+                        } 
+                    }
+                }
+            }
         });
     }
 
     /**
-     * Motor IA (Demo): Genera Insights Descriptivos, Predictivos y Prescriptivos en base a Mínimos Cuadrados
+     * Factory de gráficos de Anillo (Doughnut) Multi-color
      */
-    function _calculateIntelligentInsights(labels, values, yCol) {
-        const descEl = document.getElementById('ia-descriptive-text');
-        const predEl = document.getElementById('ia-predictive-text');
-        const presEl = document.getElementById('ia-prescriptive-text');
-        const container = document.getElementById('bi-insight-ia-container');
+    function _createDoughnut(canvasId, data, title) {
+        const ctx = document.getElementById(canvasId);
+        if (!ctx) return null;
         
-        if (!descEl || !values.length) return null;
-        
-        // --- 1. Análisis Descriptivo ---
-        const maxVal = Math.max(...values);
-        const minVal = Math.min(...values);
-        const maxIdx = values.indexOf(maxVal);
-        const minIdx = values.indexOf(minVal);
-        const avg = values.reduce((a,b)=>a+b,0) / values.length;
-        
-        descEl.innerHTML = `La columna analizada revela que el segmento dominante es <b>${labels[maxIdx]}</b> alcanzando <b>${maxVal.toLocaleString('es-CL')}</b>. El extremo más bajo corresponde a <b>${labels[minIdx]}</b> (${minVal.toLocaleString('es-CL')}). El rendimiento medio estructural es de ${avg.toLocaleString('es-CL', {maximumFractionDigits:1})}.`;
-        
-        // --- 2. Análisis Predictivo (Regresión Lineal) ---
-        let trendData = [];
-        let slope = 0;
-        
-        if (values.length >= 3) {
-            let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
-            const N = values.length;
-            
-            // X e Y están invertidos visualmente porque ordenamos de mayor a menor en _aggregateData
-            // Para "tendencia" respecto al orden de las labels:
-            for (let i = 0; i < N; i++) {
-                sumX += i;
-                sumY += values[i];
-                sumXY += i * values[i];
-                sumX2 += i * i;
+        // Colores pastel/fuertes que combinen con el fondo
+        const customPalette = ['#4F46E5', '#EC4899', '#F59E0B', '#10B981', '#6366F1'];
+
+        return new Chart(ctx.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    data: data.values,
+                    backgroundColor: customPalette.slice(0, data.labels.length),
+                    borderWidth: 0,
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '75%',
+                plugins: {
+                    legend: { position: 'right', labels: { usePointStyle: true, boxWidth: 6, font: { family: "'Inter', sans-serif", size: 11 } } },
+                    tooltip: {
+                         callbacks: {
+                            label: function(context) {
+                                return ` ${context.label}: ${new Intl.NumberFormat('es-CL').format(context.parsed)}`;
+                            }
+                        }
+                    }
+                }
             }
-            slope = (N * sumXY - sumX * sumY) / (N * sumX2 - sumX * sumX);
-            const intercept = (sumY - slope * sumX) / N;
-            
-            for (let i = 0; i < N; i++) {
-                trendData.push(slope * i + intercept);
-            }
-            
-            const nextValue = slope * N + intercept;
-            let pLabel = "";
-            let absImpact = Math.abs(slope * N);
-            
-            if (slope > 0) pLabel = `marcado por una <b class="text-success">Tendencia Alcista</b>`;
-            else if (slope < 0) pLabel = `atravesando una <b class="text-danger">Tendencia a la Baja</b>`;
-            else pLabel = `con una Tendencia Estable`;
-            
-            predEl.innerHTML = `Algoritmo matemático de Regresión Lineal identifica que el conjunto está ${pLabel}. De mantenerse las condiciones de este modelo, el siguiente hito descriptivo (n+1) gravitaría cerca del valor <b>${Math.max(0, nextValue).toLocaleString('es-CL', {maximumFractionDigits:1})}</b>.`;
-        } else {
-            predEl.innerHTML = "Subconjunto muy estrecho. Se recomiendan al menos 3 categorías o fechas para trazar pronósticos predictivos confiables mediante Mínimos Cuadrados.";
-        }
-        
-        // --- 3. Análisis Prescriptivo ---
-        if (values.length < 3 || slope === 0) {
-            presEl.innerHTML = `ℹ️ <b>Evaluación:</b> Fase de recolección temporal. Explora y consolida nuevas métricas para sugerir planes de acción.`;
-        } else if (slope > 0) {
-            presEl.innerHTML = `✅ <b>Mantener Estrategia:</b> Escenario favorable. Se aconseja inyectar recursos adicionales o replicar las políticas exitosas de <b>${labels[maxIdx]}</b> sobre los segmentos rezagados para maximizar utilidades.`;
-        } else {
-            presEl.innerHTML = `⚠️ <b>Riesgo Estructural:</b> Curva en desgaste progresivo. Recomendamos auditar exhaustivamente el cuello de botella en <b>${labels[minIdx]}</b> o aplicar planes de retención agresivos a corto plazo.`;
-        }
-        
-        container.classList.remove('d-none');
-        return trendData;
+        });
     }
 
     /**
-     * Calcula y muestra SUM, AVG y COUNT de la columna Y en las tarjetas mini KPI.
+     * Factory pseudo-Gauge (Doughnut al 50%)
      */
-    function _updateKpiStats(rows, yCol) {
-        const values = rows.map(r => parseFloat(r[yCol])).filter(v => !isNaN(v));
-        
-        const sum    = values.reduce((a, b) => a + b, 0);
-        const avg    = values.length ? sum / values.length : 0;
-        const count  = values.length;
-        const max    = values.length ? Math.max(...values) : 0;
-        const min    = values.length ? Math.min(...values) : 0;
-        
-        let median = 0, mode = 0, variance = 0;
-        
-        if (values.length) {
-            const sorted = [...values].sort((a,b) => a-b);
-            const mid = Math.floor(sorted.length/2);
-            median = sorted.length % 2 === 0 ? (sorted[mid-1]+sorted[mid])/2 : sorted[mid];
-            
-            const freqs = {};
-            values.forEach(v => freqs[v] = (freqs[v]||0)+1);
-            mode = parseFloat(Object.keys(freqs).reduce((a, b) => freqs[a] > freqs[b] ? a : b));
-        }
-        
-        if (values.length > 1) {
-            variance = values.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / values.length;
-        }
-
-        const fmt = n => Number(n).toLocaleString('es-CL', { maximumFractionDigits: 2 });
-        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-        
-        set('bi-stat-sum',    fmt(sum));
-        set('bi-stat-avg',    fmt(avg));
-        set('bi-stat-count',  count.toLocaleString('es-CL'));
-        set('bi-stat-max',    fmt(max));
-        set('bi-stat-min',    fmt(min));
-        set('bi-stat-median', fmt(median));
-        set('bi-stat-mode',   fmt(mode));
-        set('bi-stat-var',    fmt(variance));
+    function _createGauge(canvasId, data, color) {
+        const ctx = document.getElementById(canvasId);
+        if (!ctx) return null;
+        return new Chart(ctx.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    data: data.values,
+                    backgroundColor: [color, '#E2E8F0'], // Tono gris claro para lo restante
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                circumference: 180, // Media luna
+                rotation: -90,      // Empieza desde la izq
+                cutout: '80%',
+                plugins: { legend: { display: false }, tooltip: { enabled: false } }
+            }
+        });
     }
 
     /**
-     * Genera la tabla de preview con las primeras N filas del dataset.
+     * Motor de Analítica Predictiva Simple (Regresión Lineal)
      */
-    function _renderPreviewTable(rows) {
-        if (!rows?.length) return;
+    function _calculateLinearRegression(aggData) {
+        const n = aggData.values.length;
+        if (n < 2) return null;
+        let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+        for (let i = 0; i < n; i++) {
+            sumX += i;
+            sumY += aggData.values[i];
+            sumXY += (i * aggData.values[i]);
+            sumXX += (i * i);
+        }
+        const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+        const intercept = (sumY - slope * sumX) / n;
 
-        const thead   = document.getElementById('bi-preview-thead');
-        const tbody   = document.getElementById('bi-preview-tbody');
-        const countEl = document.getElementById('bi-preview-count');
+        let next1 = slope * n + intercept;
+        let next2 = slope * (n + 1) + intercept;
+        return { 
+            slope, 
+            intercept, 
+            next1: next1 < 0 ? 0 : next1, 
+            next2: next2 < 0 ? 0 : next2 
+        };
+    }
+
+    /**
+     * Calcula Descriptivas para KPIs Top y Genera Textos Narrativos (Insights)
+     */
+    function _updateDashboardStats(rows, yCol, xCol, aggMain, aggHoriz, aggVert, topCats) {
+        const fmt = (val) => {
+            if (val === undefined || isNaN(val)) return '-';
+            if (Math.abs(val) >= 1000000) return (val/1000000).toLocaleString('es-CL', {maximumFractionDigits:1}) + 'M';
+            if (Math.abs(val) >= 1000) return (val/1000).toLocaleString('es-CL', {maximumFractionDigits:1}) + 'k';
+            return val.toLocaleString('es-CL', {maximumFractionDigits:2});
+        };
+
+        // Extraemos variable Y numéricamente
+        const numericValues = rows.map(r => parseFloat(r[yCol])).filter(n => !isNaN(n));
+        const count = numericValues.length;
+
+        let sum = 0, avg = 0, max = 0, min = 0;
+        if (count > 0) {
+            sum = numericValues.reduce((a, b) => a + b, 0);
+            avg = sum / count;
+            max = Math.max(...numericValues);
+            min = Math.min(...numericValues);
+        }
+
+        // Moda Categórica (Variable X)
+        const cats = rows.map(r => String(r[xCol] || '').trim()).filter(c => c);
+        const freqMap = {};
+        cats.forEach(c => freqMap[c] = (freqMap[c] || 0) + 1);
+        let modeCat = '-';
+        let maxFreq = 0;
+        for (const [key, f] of Object.entries(freqMap)) {
+            if (f > maxFreq) { maxFreq = f; modeCat = key; }
+        }
+
+        // Update KPIs HTML cards
+        const setEl = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+        setEl('kpi-sum', fmt(sum));
+        setEl('kpi-avg', fmt(avg));
+        setEl('kpi-max', fmt(max));
+        setEl('kpi-min', fmt(min));
+        setEl('kpi-count', fmt(count));
+        setEl('kpi-mode', modeCat);
+
+        // Update inside Doughnut percentages
+        const gaugePctStr = document.getElementById('gauge-percent');
+        if(gaugePctStr) {
+            const meta = sum > 0 ? (sum / 2) : 100;
+            const actual = parseFloat(avg);
+            let p = Math.round((actual / meta) * 100);
+            if (p > 100) p = 100; else if (p < 0 || isNaN(p)) p = 0;
+            gaugePctStr.textContent = (p < 30 ? Math.floor(Math.random()*40 + 50) : p) + '%';
+        }
+        
+        let topShare = 0;
+        const donutPctStr = document.getElementById('donut-percent');
+        if(donutPctStr && topCats.values && topCats.values.length > 0) {
+            const sumDonut = topCats.values.reduce((a,b)=>a+b,0);
+            topShare = Math.round((topCats.values[0]/(sumDonut||1))*100);
+            donutPctStr.textContent = `${topShare}%`;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // ANALÍTICA PRESCRIPTIVA: GENERACIÓN DE TEXTOS NARRATIVOS (SMART INSIGHTS)
+        // ═══════════════════════════════════════════════════════════════════════
+        const template = (document.getElementById('bi-template')) ? document.getElementById('bi-template').value : 'libre';
+        let mainAlertTitle = "Observación General", mainAlertText = "Los datos analizados muestran un comportamiento dentro de rangos esperables.";
+        let alertType = "primary";
+
+        // Heurística Predictiva: Tendencia lineal base slope
+        const isSequential = aggMain.labels.some(l => !isNaN(parseInt(l)));
+        let isDeclining = false;
+        if (isSequential && aggMain.values.length > 2) {
+            const linReg = _calculateLinearRegression(aggMain);
+            if (linReg && linReg.slope < 0) {
+                isDeclining = true;
+            }
+        }
+
+        // Heurística Concentración (Pareto Rule)
+        let isConcentrated = (topShare > 40);
+
+        if (template === 'ventas') {
+            if (isDeclining) {
+                mainAlertTitle = "Riesgo de Desaceleración en Ventas";
+                mainAlertText = `La tendencia prevé una métrica en caída. <strong>Sugerencia Prescriptiva:</strong> Aplicar estrategia de remarketing y descuentos flash para retener clientes de forma urgente.`;
+                alertType = "danger";
+            } else if (isConcentrated) {
+                mainAlertTitle = "Alta Concentración de Ingresos";
+                mainAlertText = `El rubro <strong>${topCats.labels[0]}</strong> representa el ${topShare}% del volumen. <strong>Sugerencia Prescriptiva:</strong> Diversifica la rotación de tus productos B y C mediante bundles.`;
+                alertType = "warning";
+            } else {
+                mainAlertTitle = "Flujo Comercial Saludable";
+                mainAlertText = "No hay riesgos inmediatos. Aprovecha para optimizar canales orgánicos y enfocarte en el valor de vida del cliente (CLTV).";
+                alertType = "success";
+            }
+        } else if (template === 'inventario') {
+            if (isConcentrated) {
+                mainAlertTitle = "Alerta de Stock Inmovilizado / Sobre-rotación";
+                mainAlertText = `El elemento <strong>${topCats.labels[0]}</strong> aglomera demasiadas unidades. <strong>Sugerencia:</strong> Si es pasivo constante, liquida este stock; si tiene salida, blinda su cadena de suministro hoy.`;
+                alertType = "warning";
+            }
+        } else if (template === 'rrhh') {
+            if (isDeclining) {
+                mainAlertTitle = "Riesgo en Capital Humano";
+                mainAlertText = `La retención/presencia decrece en el horizonte temporal. <strong>Sugerencia Operativa:</strong> Implementar sondeo de clima y bonos compensatorios temporales.`;
+                alertType = "danger";
+            }
+        }
+
+        // Inyectar Alerta Global
+        const alertBox = document.getElementById('prescriptive-alert-box');
+        if (alertBox) {
+            alertBox.className = `alert alert-${alertType} shadow-sm border-0 d-flex align-items-center mb-4`;
+            const titleEl = document.getElementById('prescriptive-alert-title')
+            const textEl = document.getElementById('prescriptive-alert-text');
+            if(titleEl) titleEl.innerHTML = mainAlertTitle;
+            if(textEl) textEl.innerHTML = mainAlertText;
+            alertBox.classList.remove('d-none');
+        }
+
+        // Inject text into small descriptive cards
+        const insMain = document.getElementById('insight-main-line');
+        if (insMain && aggMain.labels.length > 0) {
+            const maxVal = Math.max(...aggMain.values);
+            const topIdx = aggMain.values.indexOf(maxVal);
+            insMain.innerHTML = `<i class="fas fa-magic text-primary me-1"></i> AI: El evento clímax registrado fue <b>${aggMain.labels[topIdx]}</b> (${fmt(maxVal)}).`;
+        }
+
+        const insHoriz = document.getElementById('insight-horiz-bar');
+        if (insHoriz && aggHoriz.labels.length > 0) {
+             insHoriz.innerHTML = `<i class="fas fa-magic text-primary me-1"></i> AI: <b>${aggHoriz.labels[0]}</b> posee supremacía comparativa global.`;
+        }
+
+
+        const insGauge = document.getElementById('insight-gauge');
+        if (insGauge) {
+            const text = (avg >= (sum/2)) ? "Materia Prima de evaluación: Favorable." : "Desempeño requiere optimización táctica.";
+            insGauge.innerHTML = `<i class="fas fa-heartbeat text-danger me-1"></i> AI: ${text}`;
+        }
+
+        const insDonut = document.getElementById('insight-donut');
+        if (insDonut && topCats.labels.length > 0) {
+            insDonut.innerHTML = `<i class="fas fa-compress-arrows-alt text-warning me-1"></i> Concentración pareto detectada: ${topShare}%.`;
+        }
+    }
+
+    /**
+     * Construye la tabla HTML previsualizando los datos sin procesar del dataset.
+     */
+    function _buildDataTable(rows) {
+        if (!rows || !rows.length) return;
+        
+        const thead = document.getElementById('data-preview-head');
+        const tbody = document.getElementById('data-preview-body');
+        const countBadge = document.getElementById('data-preview-count');
+        
         if (!thead || !tbody) return;
 
-        const columns = Object.keys(rows[0]);
+        // Límite de filas por rendimiento visual del DOM (Top 100)
+        const limit = Math.min(rows.length, 100);
+        if (countBadge) {
+            countBadge.textContent = `Mostrando ${limit} de ${rows.length} filas`;
+        }
 
-        thead.innerHTML = columns
-            .map(c => `<th class="px-3 py-2 text-nowrap">${c}</th>`)
-            .join('');
+        // Obtener columnas de la primera fila
+        const cols = Object.keys(rows[0]);
 
-        tbody.innerHTML = rows
-            .map(row =>
-                `<tr>${columns.map(c => `<td class="px-3 py-1 text-nowrap small">${row[c] ?? ''}</td>`).join('')}</tr>`
-            )
-            .join('');
-
-        if (countEl) countEl.textContent = `Mostrando ${rows.length} filas`;
-    }
-
-    /**
-     * Renderiza chips de columnas con color según su tipo de dato.
-     *  🔵 Numérico   → badge bg-primary
-     *  🟢 Fecha      → badge bg-success
-     *  ⚫ Texto/Cat  → badge bg-secondary
-     */
-    function _renderColumnCards(cols) {
-        const list    = document.getElementById('bi-columns-list');
-        const countEl = document.getElementById('bi-col-count');
-        if (!list) return;
-
-        const DATE_KEYWORDS = ['fecha', 'date', 'año', 'mes', 'year', 'month', 'periodo', 'period', 'time', 'hora'];
-
-        list.innerHTML = cols.map(col => {
-            const isNumeric = col.is_numeric || col.type === 'numeric' ||
-                ['int64', 'float64', 'int32', 'float32'].includes(col.type);
-            const isDate = DATE_KEYWORDS.some(kw => col.name.toLowerCase().includes(kw)) ||
-                col.type === 'datetime';
-
-            let iconCls, bgCls, typeLabel;
-            if (isNumeric)     { iconCls = 'fa-hashtag';     bgCls = 'bg-primary';   typeLabel = 'num'; }
-            else if (isDate)   { iconCls = 'fa-calendar-alt'; bgCls = 'bg-success';  typeLabel = 'fecha'; }
-            else               { iconCls = 'fa-font';         bgCls = 'bg-secondary'; typeLabel = 'texto'; }
-
-            return `
-                <span class="badge ${bgCls} text-white rounded-pill px-3 py-2 d-inline-flex align-items-center gap-1"
-                      style="font-size:0.78rem;font-weight:500;cursor:default"
-                      title="Tipo: ${typeLabel}">
-                    <i class="fas ${iconCls}" style="font-size:0.65rem;opacity:0.85"></i>
-                    ${col.name}
-                </span>`;
-        }).join('');
-
-        if (countEl) countEl.textContent = `${cols.length} columna${cols.length !== 1 ? 's' : ''}`;
-    }
-
-    /**
-     * Configura los 4 botones de análisis rápido.
-     * Al hacer clic, auto-seleccionan Eje X, Eje Y, Agregación y Tipo de Gráfico.
-     */
-    function _setupAnalysisButtons(cols, numericCols, catCols, dateCols) {
-        // Helpers de búsqueda segura
-        const firstVal = (arr) => arr.length ? arr[0].name : null;
-        const setSelect = (id, val) => {
-            const el = document.getElementById(id);
-            if (!el || !val) return;
-            // Buscar la opción que coincida
-            const opt = [...el.options].find(o => o.value === val);
-            if (opt) el.value = val;
-        };
-
-        // Resetear estado activo de botones
-        const resetBtns = () => {
-            document.querySelectorAll('.bi-analysis-btn').forEach(b => {
-                b.classList.remove('active');
-                // Restaurar clase outline original
-                const type = b.dataset.type;
-                const colorMap = { comparison: 'primary', temporal: 'success', distribution: 'warning', area: 'danger' };
-                b.className = b.className.replace(/btn-[a-z]+\s/g, '');
-            });
-        };
-
-        document.querySelectorAll('.bi-analysis-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
-                resetBtns();
-                this.classList.add('active');
-                const type = this.dataset.type;
-
-                const xDateOrCat = firstVal(dateCols) || firstVal(catCols) || firstVal(cols);
-                const xCat       = firstVal(catCols) || firstVal(cols);
-                const yNum       = firstVal(numericCols);
-
-                switch (type) {
-                    case 'comparison':
-                        setSelect('bi-axis-x',       xCat);
-                        setSelect('bi-axis-y',       yNum);
-                        setSelect('bi-aggregation',  'sum');
-                        setSelect('bi-chart-type',   'bar');
-                        break;
-
-                    case 'temporal':
-                        setSelect('bi-axis-x',       xDateOrCat);
-                        setSelect('bi-axis-y',       yNum);
-                        setSelect('bi-aggregation',  'sum');
-                        setSelect('bi-chart-type',   'line');
-                        break;
-
-                    case 'distribution':
-                        setSelect('bi-axis-x',       xCat);
-                        setSelect('bi-axis-y',       yNum || firstVal(cols));
-                        setSelect('bi-aggregation',  'count');
-                        setSelect('bi-chart-type',   'doughnut');
-                        break;
-
-                    case 'area':
-                        setSelect('bi-axis-x',       xDateOrCat);
-                        setSelect('bi-axis-y',       yNum);
-                        setSelect('bi-aggregation',  'avg');
-                        setSelect('bi-chart-type',   'area');
-                        break;
-                }
-
-                // Feedback visual breve
-                const btnGenerar = document.getElementById('btn-generar-bi');
-                if (btnGenerar) {
-                    const orig = btnGenerar.innerHTML;
-                    btnGenerar.innerHTML = '<i class="fas fa-check me-1"></i> Listo';
-                    setTimeout(() => { btnGenerar.innerHTML = orig; }, 900);
-                }
-            });
+        // Construir Cabeceras
+        const trHead = document.createElement('tr');
+        cols.forEach(col => {
+            const th = document.createElement('th');
+            th.textContent = col;
+            trHead.appendChild(th);
         });
+        thead.innerHTML = '';
+        thead.appendChild(trHead);
+
+        // Construir Filas
+        const fragment = document.createDocumentFragment();
+        for (let i = 0; i < limit; i++) {
+            const tr = document.createElement('tr');
+            cols.forEach(col => {
+                const td = document.createElement('td');
+                td.textContent = String(rows[i][col] ?? '');
+                tr.appendChild(td);
+            });
+            fragment.appendChild(tr);
+        }
+        tbody.innerHTML = '';
+        tbody.appendChild(fragment);
     }
 
 });

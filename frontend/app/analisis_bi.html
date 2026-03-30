@@ -121,287 +121,218 @@
         </nav>
 
         <!-- Main Workspace -->
-        <main class="container-fluid px-4 pt-3 pb-5">
-            
-            <!-- KPI Cards -->
-            <div id="kpi-cards-row" class="row pt-2 pb-3 g-4">
-                <!-- Define New KPI Card -->
-                <div id="kpi-card-creator" class="col-md-3 col-sm-6">
-                    <div class="card card-kpi h-100 bg-primary bg-opacity-10 border-primary border-dashed" style="border-style: dashed; cursor: pointer;" data-bs-toggle="modal" data-bs-target="#kpiModal">
-                        <div class="card-body d-flex flex-column align-items-center justify-content-center text-primary">
-                            <i class="fas fa-plus-circle fa-2x mb-2"></i>
-                            <h6 class="fw-bold mb-0">Definir Nuevo KPI</h6>
+        <!-- Main Workspace -->
+        <main class="container-fluid px-4 pt-4 pb-5">
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                <h4 class="fw-bold m-0" style="color:var(--primary-color)"><i class="fas fa-desktop me-2"></i>Dashboard Minimalista</h4>
+                <button class="btn btn-danger fw-bold rounded-pill shadow-sm py-2 px-4 d-none" id="btn-export-pdf" title="Exportar a PDF">
+                    <i class="fas fa-file-pdf me-2"></i> Exportar a PDF
+                </button>
+            </div>
+
+            <!-- Panel Superior de Configuración -->
+            <div class="dash-card p-4 mb-4 shadow-sm" style="border-top: 4px solid var(--primary-color);">
+                
+                <!-- Selector de Plantilla de Smart AI -->
+                <div class="row g-3 mb-3 border-bottom pb-3">
+                    <div class="col-md-4">
+                        <label class="form-label text-dark fw-bold mb-1"><i class="fas fa-brain text-primary me-2"></i> Plantilla Estratégica</label>
+                        <select class="form-select border-primary border-opacity-50 fw-bold" id="bi-template" style="background-color: #f8fafc;">
+                            <option value="libre" selected>📊 Análisis Libre (Exploratorio)</option>
+                            <option value="ventas">💰 Rendimiento de Ventas & CX</option>
+                            <option value="inventario">📦 Operaciones & Inventario</option>
+                            <option value="rrhh">👥 Capital Humano (RRHH)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-8 d-flex align-items-center">
+                        <div class="p-2 border rounded bg-light w-100">
+                            <p class="text-muted small mb-0" id="bi-template-desc">
+                                <strong>Modo exploratorio:</strong> Selecciona manualmente tus cruces de variables. El sistema no predecirá comportamientos específicos.
+                            </p>
                         </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-2">
+                        <label class="form-label text-muted small fw-bold mb-1">Dataset a Analizar</label>
+                        <select class="form-select border-0 bg-light rounded px-3 py-2" id="bi-dataset" style="font-size:0.85rem">
+                            <option value="" disabled selected>Buscar dataset...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label text-primary small fw-bold mb-1">Eje X (Agrupación)</label>
+                        <select class="form-select border-primary border-opacity-50 rounded px-3 py-2" id="bi-axis-x" disabled style="font-size:0.85rem">
+                            <option value="" disabled selected>-- Elija --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label text-muted small fw-bold mb-1">Eje Y (Métrica)</label>
+                        <select class="form-select border-0 bg-light rounded px-3 py-2" id="bi-axis-y" disabled style="font-size:0.85rem">
+                            <option value="" disabled selected>-- Elija --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label text-muted small fw-bold mb-1">Operación</label>
+                        <select class="form-select border-0 bg-light rounded px-3 py-2" id="bi-agg-func" disabled style="font-size:0.85rem">
+                            <option value="sum" selected>Suma</option>
+                            <option value="avg">Promedio</option>
+                            <option value="count">Recuento</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label text-warning small fw-bold mb-1"><i class="fas fa-filter me-1"></i> Filtro Específico (Opcional)</label>
+                        <div class="d-flex gap-2">
+                            <select class="form-select border-warning border-opacity-50 rounded px-2 flex-grow-1" id="bi-filter-col" disabled style="font-size:0.85rem">
+                                <option value="" selected>Sin Filtro (Todo)</option>
+                            </select>
+                            <select class="form-select border-warning border-opacity-50 rounded px-2 w-50" id="bi-filter-val" disabled style="font-size:0.85rem; display:none;">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <button class="btn w-100 fw-bold shadow-sm py-2 text-white h-100" style="background-color: var(--primary-color)" id="btn-generar-bi" disabled title="Procesar y Renderizar">
+                            <i class="fas fa-play"></i>
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- ╔══════════════════════════════════════════════════════╗
-                 ║   PANEL ANÁLISIS BI DINÁMICO                        ║
-                 ╚══════════════════════════════════════════════════════╝ -->
-            <div class="card border-0 shadow-sm mb-4 rounded-3">
-                <div class="card-header bg-white border-0 pt-4 pb-2">
-                    <div class="d-flex align-items-center">
-                        <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3" style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;">
-                            <i class="fas fa-sliders-h text-primary"></i>
-                        </div>
-                        <div>
-                            <h5 class="fw-bold m-0 text-dark">Análisis Dinámico Interactivo</h5>
-                            <small class="text-muted">Selecciona variables de tu dataset y genera gráficos en tiempo real</small>
-                        </div>
-                        <span class="ms-auto badge bg-primary bg-opacity-10 text-primary fw-bold px-3 py-2 rounded-pill"><i class="fas fa-bolt me-1"></i> Live</span>
-                    </div>
-                </div>
-                <div class="card-body pt-3 pb-4">
-                    <div class="row g-3 align-items-end">
-                        <!-- Dataset -->
-                        <div class="col-md-3">
-                            <label class="form-label fw-semibold text-secondary mb-1" style="font-size:0.78rem">DATASET</label>
-                            <select class="form-select shadow-sm" id="bi-dataset">
-                                <option value="" disabled selected>-- Selecciona un dataset --</option>
-                            </select>
-                        </div>
-                        <!-- Variable X -->
-                        <div class="col-md-2">
-                            <label class="form-label fw-semibold text-secondary mb-1" style="font-size:0.78rem">EJE X (Categoría)</label>
-                            <select class="form-select shadow-sm" id="bi-axis-x" disabled>
-                                <option value="" disabled selected>-- Primero elige dataset --</option>
-                            </select>
-                        </div>
-                        <!-- Variable Y -->
-                        <div class="col-md-2">
-                            <label class="form-label fw-semibold text-secondary mb-1" style="font-size:0.78rem">EJE Y (Métrica)</label>
-                            <select class="form-select shadow-sm" id="bi-axis-y" disabled>
-                                <option value="" disabled selected>-- Primero elige dataset --</option>
-                            </select>
-                        </div>
-                        <!-- Agregación -->
-                        <div class="col-md-2">
-                            <label class="form-label fw-semibold text-secondary mb-1" style="font-size:0.78rem">AGREGACIÓN</label>
-                            <select class="form-select fw-bold text-primary shadow-sm" id="bi-aggregation">
-                                <option value="sum">Σ Suma (SUM)</option>
-                                <option value="avg">⌀ Promedio (AVG)</option>
-                                <option value="count"># Conteo (COUNT)</option>
-                                <option value="max">⬆️ Máximo (MAX)</option>
-                                <option value="min">⬇️ Mínimo (MIN)</option>
-                                <option value="median">🎯 Mediana (MEDIAN)</option>
-                                <option value="mode">✨ Moda (MODE)</option>
-                                <option value="variance">📉 Varianza (VAR)</option>
-                            </select>
-                        </div>
-                        <!-- Tipo de gráfico -->
-                        <div class="col-md-2">
-                            <label class="form-label fw-semibold text-secondary mb-1" style="font-size:0.78rem">TIPO DE GRÁFICO</label>
-                            <select class="form-select shadow-sm" id="bi-chart-type">
-                                <option value="bar">📊 Barras</option>
-                                <option value="line">📈 Líneas</option>
-                                <option value="area">🏔️ Área rellena</option>
-                                <option value="doughnut">🍩 Anillo</option>
-                                <option value="pie">🥧 Circular (Pie)</option>
-                                <option value="polarArea">🎯 Área Polar</option>
-                                <option value="radar">🕸️ Radar (Comparación)</option>
-                                <option value="horizontalBar">↔️ Barras Horiz.</option>
-                            </select>
-                        </div>
-                        <!-- Botón generar -->
-                        <div class="col-md-1">
-                            <button id="btn-generar-bi" class="btn btn-primary fw-bold w-100 shadow-sm rounded-3" style="height:38px" disabled>
-                                <i class="fas fa-play"></i>
-                            </button>
-                        </div>
-                    </div>
+            <!-- Loader Inicial (Antes de elegir dataset) -->
+            <div id="initial-empty-state" class="text-center py-5 flex-grow-1 d-flex flex-column justify-content-center">
+                <div>
+                    <i class="fas fa-magic fa-4x mb-3 text-light"></i>
+                    <h4 class="fw-bold" style="color:var(--text-color, #A0AEC0)">Esperando Configuración</h4>
+                    <p class="text-muted">Utiliza el panel superior para cargar los datos en el lienzo.</p>
                 </div>
             </div>
 
-            <!-- Panel: Columnas + Tipo de Análisis (oculto hasta seleccionar dataset) -->
-            <div id="bi-columns-wrapper" class="d-none mb-4">
-                <div class="row g-3">
-                    <!-- Columnas detectadas -->
-                    <div class="col-lg-8">
-                        <div class="card border-0 shadow-sm rounded-3 h-100">
-                            <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center pt-3 pb-2">
-                                <h6 class="fw-bold m-0 text-dark"><i class="fas fa-columns text-primary me-2"></i>Columnas Detectadas</h6>
-                                <span class="badge bg-primary rounded-pill fw-semibold" id="bi-col-count">—</span>
-                            </div>
-                            <div class="card-body p-3">
-                                <div id="bi-columns-list" class="d-flex flex-wrap gap-2 mb-2"></div>
-                                <div class="d-flex gap-3 mt-3 pt-2 border-top">
-                                    <small class="text-muted d-flex align-items-center gap-1"><span class="badge bg-primary rounded-pill px-2 py-1"><i class="fas fa-hashtag"></i></span> Numérico</small>
-                                    <small class="text-muted d-flex align-items-center gap-1"><span class="badge bg-success rounded-pill px-2 py-1"><i class="fas fa-calendar-alt"></i></span> Fecha/Tiempo</small>
-                                    <small class="text-muted d-flex align-items-center gap-1"><span class="badge bg-secondary rounded-pill px-2 py-1"><i class="fas fa-font"></i></span> Texto/Categoría</small>
-                                </div>
-                            </div>
+            <!-- DASHBOARD GRID -->
+            <div class="d-none" id="dashboard-grid">
+                
+                <!-- ALERTA PRESCRIPTIVA CENTRAL -->
+                <div class="alert alert-primary shadow-sm border-0 d-none d-flex align-items-center mb-4" id="prescriptive-alert-box" style="background-color: #e0e7ff; color: #3730a3;">
+                    <i class="fas fa-lightbulb fa-2x me-3 text-warning"></i>
+                    <div>
+                        <h6 class="fw-bold mb-1" id="prescriptive-alert-title">Sugerencia Estratégica AI</h6>
+                        <p class="mb-0 small" id="prescriptive-alert-text">Analizando...</p>
+                    </div>
+                </div>
+
+                <!-- Tarjetas Estadísticas Superiores Reubicadas -->
+                <div class="row g-3 mb-4" id="panel-stats-wrapper">
+                    <div class="col">
+                        <div class="dash-card p-3 shadow-sm text-center">
+                            <span class="text-muted small fw-bold d-block mb-1">Suma Total</span>
+                            <strong class="text-dark fs-4" id="kpi-sum">0</strong>
                         </div>
                     </div>
-                    <!-- Tipo de Análisis rápido -->
-                    <div class="col-lg-4">
-                        <div class="card border-0 shadow-sm rounded-3 h-100">
-                            <div class="card-header bg-white border-bottom pt-3 pb-2">
-                                <h6 class="fw-bold m-0 text-dark"><i class="fas fa-magic text-primary me-2"></i>Tipo de Análisis</h6>
-                                <small class="text-muted" style="font-size:0.75rem">Auto-configura variables y gráfico</small>
+                    <div class="col">
+                        <div class="dash-card p-3 shadow-sm text-center">
+                            <span class="text-muted small fw-bold d-block mb-1">Promedio</span>
+                            <strong class="text-dark fs-4" id="kpi-avg">0</strong>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="dash-card p-3 shadow-sm text-center">
+                            <span class="text-success small fw-bold d-block mb-1">Máximo Obtenido</span>
+                            <strong class="text-success fs-4" id="kpi-max">0</strong>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="dash-card p-3 shadow-sm text-center">
+                            <span class="text-danger small fw-bold d-block mb-1">Mínimo Obtenido</span>
+                            <strong class="text-danger fs-4" id="kpi-min">0</strong>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="dash-card p-3 shadow-sm text-center">
+                            <span class="text-primary small fw-bold d-block mb-1">Registros</span>
+                            <strong class="text-primary fs-4" id="kpi-count">0</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráficos Fila 1 -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-8">
+                        <div class="dash-card h-100 p-4 d-flex flex-column shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h6 class="fw-bold text-dark m-0" id="main-chart-title">Evolución Principal</h6>
+                                <span class="badge bg-light text-primary border border-primary border-opacity-25 rounded-pill px-3 py-1 fw-bold" style="font-size:0.75rem" id="badge-x1">Eje X 1</span>
                             </div>
-                            <div class="card-body p-2 d-flex flex-column gap-2">
-                                <button class="btn btn-outline-primary text-start rounded-3 bi-analysis-btn py-2 px-3" data-type="comparison" id="btn-analysis-comparison">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <i class="fas fa-chart-bar text-primary fs-5"></i>
-                                        <div>
-                                            <strong class="d-block" style="font-size:0.85rem">Comparación</strong>
-                                            <small class="text-muted" style="font-size:0.73rem">Barras por categoría · SUM</small>
-                                        </div>
-                                    </div>
-                                </button>
-                                <button class="btn btn-outline-success text-start rounded-3 bi-analysis-btn py-2 px-3" data-type="temporal" id="btn-analysis-temporal">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <i class="fas fa-chart-line text-success fs-5"></i>
-                                        <div>
-                                            <strong class="d-block" style="font-size:0.85rem">Evolución Temporal</strong>
-                                            <small class="text-muted" style="font-size:0.73rem">Líneas en el tiempo · SUM</small>
-                                        </div>
-                                    </div>
-                                </button>
-                                <button class="btn btn-outline-warning text-start rounded-3 bi-analysis-btn py-2 px-3" data-type="distribution" id="btn-analysis-distribution">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <i class="fas fa-chart-pie text-warning fs-5"></i>
-                                        <div>
-                                            <strong class="d-block" style="font-size:0.85rem">Distribución</strong>
-                                            <small class="text-muted" style="font-size:0.73rem">Anillo por proporciones · COUNT</small>
-                                        </div>
-                                    </div>
-                                </button>
-                                <button class="btn btn-outline-danger text-start rounded-3 bi-analysis-btn py-2 px-3" data-type="area" id="btn-analysis-area">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <i class="fas fa-chart-area text-danger fs-5"></i>
-                                        <div>
-                                            <strong class="d-block" style="font-size:0.85rem">Área Acumulada</strong>
-                                            <small class="text-muted" style="font-size:0.73rem">Tendencia rellena · AVG</small>
-                                        </div>
-                                    </div>
-                                </button>
+                            <div style="position:relative; height: 260px; width: 100%;">
+                                <canvas id="chart-main-line"></canvas>
+                            </div>
+                            <p class="chart-insight text-muted small mt-3 mb-0" id="insight-main-line"><i class="fas fa-circle text-primary me-1" style="font-size: 8px;"></i> Analizando tendencia...</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="dash-card h-100 p-4 d-flex flex-column align-items-center text-center justify-content-between shadow-sm">
+                            <h6 class="fw-bold text-muted align-self-start m-0" style="font-size:0.85rem" id="gauge-title">Rendimiento KPI</h6>
+                            <div style="position:relative; height: 160px; width: 160px; margin: auto;">
+                                <canvas id="chart-gauge"></canvas>
+                                <div class="position-absolute" style="top:55%; left:50%; transform:translate(-50%, -50%);">
+                                    <h2 class="m-0 fw-bold text-dark" id="gauge-percent">0%</h2>
+                                </div>
+                            </div>
+                            <div class="w-100 mt-2">
+                                <p class="chart-insight text-muted mb-2 text-start" style="font-size:0.8rem" id="insight-gauge"><i class="fas fa-circle text-info me-1" style="font-size: 8px;"></i> Desempeño.</p>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Área del gráfico principal (oculta hasta generar) -->
-            <div id="bi-main-wrapper" class="d-none mb-4">
-                <div class="card border-0 shadow-sm rounded-3">
-                    <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center pt-4 pb-3">
-                        <h5 class="fw-bold m-0 text-dark" id="bi-chart-title"><i class="fas fa-chart-bar text-primary me-2"></i>Gráfico</h5>
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="badge bg-primary bg-opacity-10 text-primary fw-bold px-3 py-2 rounded-pill" id="bi-badge-dataset">—</span>
-                            <span class="badge bg-success bg-opacity-10 text-success fw-bold px-3 py-2 rounded-pill" id="bi-badge-rows">—</span>
-                            <button id="btn-descargar-pdf" class="btn btn-sm btn-outline-danger fw-bold ms-2 rounded-3 shadow-sm" title="Exportar Reporte a PDF">
-                                <i class="fas fa-file-pdf me-1"></i> PDF
-                            </button>
+                <!-- Gráficos Fila 2 -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-8">
+                        <div class="dash-card h-100 p-4 d-flex flex-column shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="fw-bold text-dark m-0" id="horiz-chart-title" style="font-size:0.85rem">Distribución de Registros</h6>
+                            </div>
+                            <div style="position:relative; height: 200px; width: 100%;">
+                                <canvas id="chart-horiz-bar"></canvas>
+                            </div>
+                            <p class="chart-insight text-muted small mt-3 mb-0 text-start" id="insight-horiz-bar"><i class="fas fa-circle text-purple me-1" style="font-size: 8px; color: #8B5CF6;"></i> Distribución.</p>
                         </div>
                     </div>
-                    <div class="card-body p-4">
-                        <!-- Mini KPI Stats (Power BI Style Cards) -->
-                        <div class="row g-3 mb-4 row-cols-2 row-cols-md-4">
-                            <div class="col">
-                                <div class="bg-primary bg-opacity-10 rounded-3 p-3 text-center border border-primary border-opacity-10 h-100 placeholder-wave-hover">
-                                    <small class="text-primary fw-bold text-uppercase d-block mb-1" style="font-size:0.65rem;letter-spacing:0.5px"><i class="fas fa-plus-circle me-1"></i>Total (SUM)</small>
-                                    <span class="fw-bold fs-5 text-dark" id="bi-stat-sum">—</span>
-                                </div>
+                    <div class="col-md-4">
+                        <div class="dash-card p-4 h-100 d-flex flex-column shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="fw-bold text-dark m-0" style="font-size:0.85rem" id="donut-title">Concentración Top Categorías</h6>
                             </div>
-                            <div class="col">
-                                <div class="bg-success bg-opacity-10 rounded-3 p-3 text-center border border-success border-opacity-10 h-100">
-                                    <small class="text-success fw-bold text-uppercase d-block mb-1" style="font-size:0.65rem;letter-spacing:0.5px">⌀ Promedio</small>
-                                    <span class="fw-bold fs-5 text-dark" id="bi-stat-avg">—</span>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="bg-info bg-opacity-10 rounded-3 p-3 text-center border border-info border-opacity-10 h-100">
-                                    <small class="text-info fw-bold text-uppercase d-block mb-1" style="font-size:0.65rem;letter-spacing:0.5px">⬆️ Máximo</small>
-                                    <span class="fw-bold fs-5 text-dark" id="bi-stat-max">—</span>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="bg-secondary bg-opacity-10 rounded-3 p-3 text-center border border-secondary border-opacity-10 h-100">
-                                    <small class="text-secondary fw-bold text-uppercase d-block mb-1" style="font-size:0.65rem;letter-spacing:0.5px">⬇️ Mínimo</small>
-                                    <span class="fw-bold fs-5 text-dark" id="bi-stat-min">—</span>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="bg-danger bg-opacity-10 rounded-3 p-3 text-center border border-danger border-opacity-10 h-100">
-                                    <small class="text-danger fw-bold text-uppercase d-block mb-1" style="font-size:0.65rem;letter-spacing:0.5px">🎯 Mediana</small>
-                                    <span class="fw-bold fs-5 text-dark" id="bi-stat-median">—</span>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="bg-dark bg-opacity-10 rounded-3 p-3 text-center border border-dark border-opacity-10 h-100">
-                                    <small class="text-dark fw-bold text-uppercase d-block mb-1" style="font-size:0.65rem;letter-spacing:0.5px">✨ Moda</small>
-                                    <span class="fw-bold fs-5 text-dark" id="bi-stat-mode">—</span>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="bg-secondary bg-opacity-10 rounded-3 p-3 text-center border border-secondary border-opacity-10 h-100">
-                                    <small class="text-secondary fw-bold text-uppercase d-block mb-1" style="font-size:0.65rem;letter-spacing:0.5px">📉 Varianza</small>
-                                    <span class="fw-bold fs-5 text-dark" id="bi-stat-var">—</span>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="bg-warning bg-opacity-10 rounded-3 p-3 text-center border border-warning border-opacity-10 h-100">
-                                    <small class="text-warning fw-bold text-uppercase d-block mb-1" style="font-size:0.65rem;letter-spacing:0.5px"># Registros</small>
-                                    <span class="fw-bold fs-5 text-dark" id="bi-stat-count">—</span>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Canvas del gráfico dinámico -->
-                        <div style="position:relative;height:400px;width:100%">
-                            <canvas id="mainChart"></canvas>
-                        </div>
-
-                        <!-- Insight IA Assesor -->
-                        <div id="bi-insight-ia-container" class="mt-4 pt-4 border-top d-none">
-                            <h6 class="fw-bold text-dark mb-3"><i class="fas fa-brain text-primary me-2"></i>Insight IA: Asesor Analítico</h6>
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <div class="p-3 bg-light rounded-3 border h-100">
-                                        <small class="fw-bold text-secondary text-uppercase d-block mb-2" style="font-size:0.7rem"><i class="fas fa-search me-1"></i> Descriptivo (¿Qué pasó?)</small>
-                                        <p id="ia-descriptive-text" class="m-0 text-dark" style="font-size:0.85rem; line-height:1.4"></p>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="p-3 bg-primary bg-opacity-10 rounded-3 border border-primary border-opacity-25 h-100">
-                                        <small class="fw-bold text-primary text-uppercase d-block mb-2" style="font-size:0.7rem"><i class="fas fa-magic me-1"></i> Predictivo (Tendencia)</small>
-                                        <p id="ia-predictive-text" class="m-0 text-dark" style="font-size:0.85rem; line-height:1.4"></p>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="p-3 bg-warning bg-opacity-10 rounded-3 border border-warning border-opacity-50 h-100">
-                                        <small class="fw-bold text-warning text-uppercase d-block mb-2" style="font-size:0.7rem"><i class="fas fa-lightbulb me-1" style="color:#d99500"></i> Prescriptivo (Recomendación)</small>
-                                        <p id="ia-prescriptive-text" class="m-0 text-dark" style="font-size:0.85rem; line-height:1.4"></p>
+                            <div class="flex-grow-1" style="position:relative; min-height: 160px; width: 100%; display:flex; align-items:center; justify-content:center;">
+                                <div style="position:relative; height: 160px; width: 160px;">
+                                    <canvas id="chart-side-donut"></canvas>
+                                    <div class="position-absolute w-100 text-center" style="top:50%; left:50%; transform:translate(-50%, -50%);">
+                                        <h5 class="m-0 fw-bold text-dark" id="donut-percent" style="font-size:1.1rem">0%</h5>
                                     </div>
                                 </div>
                             </div>
+                            <p class="chart-insight text-muted small mt-3 mb-0 text-start" id="insight-donut"><i class="fas fa-circle text-success me-1" style="font-size: 8px;"></i> Concentración.</p>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Tabla Preview (oculta hasta generar) -->
-            <div id="bi-preview-wrapper" class="d-none mb-4">
-                <div class="card border-0 shadow-sm rounded-3">
-                    <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center pt-3 pb-2">
-                        <h6 class="fw-bold m-0 text-dark"><i class="fas fa-table text-primary me-2"></i>Vista Previa del Dataset</h6>
-                        <small class="text-muted" id="bi-preview-count">—</small>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive" style="max-height:280px;overflow-y:auto">
-                            <table class="table table-sm table-hover table-striped mb-0" id="bi-preview-table">
-                                <thead class="table-dark" style="position:sticky;top:0">
-                                    <tr id="bi-preview-thead"></tr>
+                <!-- DATA PREVIEW TABLE -->
+                <div class="mt-4" id="data-preview-container">
+                    <div class="dash-card p-4 shadow-sm">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold text-dark m-0"><i class="fas fa-table text-primary me-2"></i> Muestra de Datos Analizados</h6>
+                            <span class="badge bg-light text-muted border px-3 py-1 rounded-pill" id="data-preview-count">0 filas</span>
+                        </div>
+                        <div class="table-responsive border rounded" style="max-height: 400px; overflow-y: auto;">
+                            <table class="table table-hover table-sm mb-0 align-middle text-nowrap" style="font-size: 0.8rem;">
+                                <thead class="table-light sticky-top" id="data-preview-head">
+                                    <tr><th>Cargando...</th></tr>
                                 </thead>
-                                <tbody id="bi-preview-tbody"></tbody>
+                                <tbody id="data-preview-body">
+                                </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
             </div>
-
-
         </main>
     </div>
 </div>
