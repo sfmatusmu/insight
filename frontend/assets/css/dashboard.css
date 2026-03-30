@@ -1,0 +1,190 @@
+/* Structural Variables for DataPyme BI Internal App */
+:root {
+    --sidebar-bg: #21618C; /* Original Dark Blue hue from wireframe */
+    --sidebar-hover: #1A5276;
+    --sidebar-active: #2874A6;
+    --body-bg: #F4F6F7;
+    --header-text: #2C3E50;
+    --card-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    --chart-bar-color: #2874A6;
+}
+
+body {
+    background-color: var(--body-bg) !important;
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    overflow-x: hidden;
+}
+
+/* Sidebar Styling */
+#sidebar {
+    width: 260px;
+    height: 100vh;
+    background-color: var(--sidebar-bg);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    color: white;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header {
+    padding: 1.5rem;
+    font-size: 1.6rem;
+    font-weight: 700;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 2rem;
+    letter-spacing: -0.5px;
+}
+
+.sidebar-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+}
+
+.sidebar-nav li a {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    color: rgba(255,255,255,0.9);
+    text-decoration: none;
+    font-weight: 600;
+    transition: background 0.3s;
+}
+
+.sidebar-nav li a i {
+    margin-right: 1rem;
+    font-size: 1.2rem;
+}
+
+.sidebar-nav li.active a,
+.sidebar-nav li a:hover {
+    background-color: var(--sidebar-active);
+    color: white;
+}
+
+/* Page Layout */
+#main-content {
+    margin-left: 260px;
+    padding: 2rem 3rem;
+    min-height: 100vh;
+}
+
+/* Top Navigation Emulation */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    color: var(--header-text);
+}
+
+.user-dropdown .avatar {
+    width: 40px;
+    height: 40px;
+    background-color: var(--sidebar-active);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Custom Standard Cards */
+.bi-card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: var(--card-shadow);
+    padding: 1.5rem;
+    height: 100%;
+}
+
+.bi-card-title {
+    color: var(--sidebar-bg);
+    font-weight: 700;
+    font-size: 1.3rem;
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.5px;
+}
+
+/* KPI Highlights */
+.kpi-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+}
+
+.kpi-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--header-text);
+    line-height: 1;
+    margin-bottom: 0.2rem;
+}
+
+.kpi-label {
+    color: #7F8C8D;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+/* Lists and Lists items */
+.etl-list li {
+    padding: 0.8rem 0;
+    border-bottom: 1px solid #f0f3f4;
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    color: #34495e;
+}
+.etl-list li:last-child {
+    border-bottom: none;
+}
+.etl-list li span.value {
+    margin-left: auto;
+    font-weight: 800;
+    color: var(--header-text);
+}
+
+.rec-list li {
+    padding: 0.8rem 0;
+    color: #34495e;
+    font-weight: 500;
+    border-bottom: 1px solid #e5e7e9;
+}
+.rec-list li:last-child {
+    border-bottom: none;
+}
+
+/* Responsive Overrides */
+@media (max-width: 991px) {
+    #sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    #main-content {
+        margin-left: 0;
+        padding: 1.5rem;
+    }
+    .sidebar-open #sidebar {
+        transform: translateX(0);
+    }
+}
+
+/* Custom Additions from dashboard.html */
+body {
+    font-family: 'Inter', sans-serif;
+}
+/* Ajustes visuales sutiles acordes a Inter */
+.info-box-text {
+    font-weight: 500;
+}

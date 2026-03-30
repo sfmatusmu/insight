@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <title>Gestión de Usuarios | DataPyme BI</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Bootstrap 5 CSS (Nativo) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../assets/css/layout.css">
+    <link rel="stylesheet" href="../assets/css/gestion_archivos.css">
+    <link rel="stylesheet" href="../assets/css/gestion_usuarios.css">
+</head>
+<body class="bg-light">
+
+<div class="d-flex flex-nowrap align-items-stretch">
+    <!-- Sidebar Premium BS5 -->
+    <aside id="sidebar" class="d-flex flex-column flex-shrink-0 p-3 shadow-lg position-relative">
+        <a href="dashboard.html" class="d-flex align-items-center mb-4 mt-2 me-md-auto text-white text-decoration-none">
+            <i class="fas fa-chart-pie ms-2 me-3 fs-3" style="color: #00E5FF;"></i>
+            <span class="fs-4 fw-bolder tracking-tight">DataPyme BI</span>
+        </a>
+        <ul class="nav nav-pills flex-column mb-auto">
+            <li class="nav-item">
+                <a href="dashboard.html" class="nav-link"><i class="fas fa-tachometer-alt fa-fw me-2"></i> Dashboard</a>
+            </li>
+            <li class="nav-item">
+                <a href="carga_datos.html" class="nav-link"><i class="fas fa-cloud-upload-alt fa-fw me-2"></i> Carga de datos</a>
+            </li>
+            <li class="nav-item">
+                <a href="analisis_bi.html" class="nav-link"><i class="fas fa-chart-bar fa-fw me-2"></i> Análisis BI</a>
+            </li>
+            <li class="nav-item">
+                <a href="gestion_archivos.html" class="nav-link"><i class="fas fa-file-archive fa-fw me-2"></i> Gestión archivos</a>
+            </li>
+            <li class="nav-item">
+                <a href="gestion_usuarios.html" class="nav-link active" aria-current="page"><i class="fas fa-users fa-fw me-2"></i> Gestión usuarios</a>
+            </li>
+            <li class="mt-4 mb-2"><span class="text-uppercase text-muted fw-bold ms-3" style="font-size: 0.70rem; letter-spacing: 1px;">CUENTA</span></li>
+            <li class="nav-item">
+                <a href="../auth/login.html" class="nav-link text-danger"><i class="fas fa-sign-out-alt fa-fw me-2"></i> Cerrar Sesión</a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Main Workspace Content -->
+    <div id="content-wrapper" class="d-flex flex-column flex-grow-1 bg-light">
+        <!-- Navbar Top -->
+        <nav class="navbar navbar-expand-lg top-navbar px-4 py-3 sticky-top">
+            <div class="container-fluid p-0 d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-light rounded-circle shadow-sm me-3" id="sidebarToggle" type="button" style="width: 42px; height: 42px;">
+                        <i class="fas fa-bars text-secondary"></i>
+                    </button>
+                    <h5 class="m-0 fw-bold text-dark d-none d-sm-block">BI Dashboard</h5>
+                </div>
+                
+                <div class="d-flex align-items-center gap-4">
+                    <!-- Notifications Dropdown -->
+                    <div class="dropdown">
+                        <a href="#" class="d-flex align-items-center text-decoration-none user-menu-btn" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                            <div class="position-relative">
+                                <i class="far fa-bell fs-5 text-secondary"></i>
+                                <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
+                                    <span class="visually-hidden">Nuevas notificaciones</span>
+                                </span>
+                            </div>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-3 p-0" style="border-radius: 12px; width: 320px;">
+                            <li class="p-3 border-bottom d-flex justify-content-between align-items-center bg-light">
+                                <h6 class="mb-0 fw-bold">Notificaciones</h6>
+                                <span class="badge bg-primary rounded-pill">1 nueva</span>
+                            </li>
+                            <li>
+                                <a href="#" class="dropdown-item py-3 border-bottom text-wrap" style="white-space: normal;">
+                                    <div class="d-flex align-items-start">
+                                        <div class="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
+                                            <i class="fas fa-file-alt text-primary fs-5"></i>
+                                        </div>
+                                        <div>
+                                            <p class="mb-1 fw-bold text-dark">Análisis completado</p>
+                                            <p class="mb-0 text-muted small" style="font-size: 0.85rem;">El reporte de ventas ha sido generado y está listo.</p>
+                                            <small class="text-primary fw-bold mt-1 d-block" style="font-size: 0.75rem;">Hace 3 min</small>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li class="p-2 text-center">
+                                <a href="notificaciones.html" class="text-decoration-none fw-bold text-primary small">Ver todas las notificaciones</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- User Profile Dropdown -->
+                    <div class="dropdown">
+                        <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle user-menu-btn" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle fs-4 text-primary me-2"></i>
+                            <span class="text-dark fw-bold d-none d-md-inline">Sergio Matus</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-3 p-0" style="border-radius: 12px; overflow: hidden; width: 280px;">
+                            <li class="text-center py-4 bg-primary text-white"><i class="fas fa-user-circle fa-4x mb-2"></i><h5 class="fw-bold mb-0">Sergio Matus</h5><small>Administrador</small></li>
+                            <li class="p-3">
+                                <a href="perfil_usuario.html" class="btn btn-light w-100 text-start fw-bold mb-2 shadow-sm border"><i class="fas fa-user-edit me-2"></i> Perfil</a>
+                                <a href="../auth/login.html" class="btn btn-danger w-100 fw-bold shadow-sm border-0"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Workspace -->
+        <main class="container-fluid px-4 py-5">
+            <div class="row align-items-center mb-4">
+                <div class="col-sm-6">
+                    <h2 class="fw-bold text-dark mb-0">Gestión de Usuarios</h2>
+                </div>
+                <div class="col-sm-6 text-end">
+                    <button class="btn btn-primary fw-bold bg-primary-custom border-0 shadow-sm rounded-pill px-4 py-2" onclick="abrirModalCrear()">
+                        <i class="fas fa-user-plus me-2"></i> Crear usuario
+                    </button>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="card card-custom-border shadow-sm">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table mb-0 file-manager-table table-borderless table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center">Nombre</th>
+                                            <th class="text-center">Email</th>
+                                            <th class="text-center">Rol</th>
+                                            <th class="text-center">Creación</th>
+                                            <th class="text-center" style="width: 20%;">Actividad</th>
+                                            <th class="text-center">Estado</th>
+                                            <th class="text-center">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tablaUsuarios">
+                                        <!-- Main Row -->
+                                        <tr class="main-record-row border-bottom align-middle" id="user-1">
+                                            <td class="text-center text-orange fw-bold align-middle">
+                                                Usuario de prueba
+                                            </td>
+                                            <td class="text-center text-orange align-middle">
+                                                usuario.prueba@prueba.com
+                                            </td>
+                                            <td class="text-center text-orange align-middle">
+                                                Administrador
+                                            </td>
+                                            <td class="text-center text-dark-blue align-middle">
+                                                15-02-2025
+                                            </td>
+                                            <td class="text-center text-dark-blue align-middle font-weight-normal" style="font-size: 0.85rem;">
+                                                12 cargas de datos<br>5 análisis generados
+                                            </td>
+                                            <td class="text-center align-middle">
+                                                <i class="fas fa-check-circle text-success" style="font-size: 1.25rem;"></i>
+                                            </td>
+                                            <td class="text-center align-middle">
+                                                <div class="d-flex justify-content-center align-items-center" style="gap: 15px;">
+                                                    <div class="dropdown d-inline-block">
+                                                        <a href="#" class="text-primary icon-action" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Más opciones">
+                                                            <i class="fas fa-plus"></i>
+                                                        </a>
+                                                        <div class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius: 8px;">
+                                                            <a class="dropdown-item py-2 text-dark-blue" href="#"><i class="fas fa-eye me-2 text-primary" style="width: 16px;"></i> Ver actividad</a>
+                                                            <div class="dropdown-divider"></div>
+                                                            <a class="dropdown-item py-2 text-dark-blue text-warning" href="#"><i class="fas fa-ban me-2 text-warning" style="width: 16px;"></i> Suspender cuenta</a>
+                                                        </div>
+                                                    </div>
+                                                    <a href="#" class="text-primary icon-action" title="Editar" onclick="abrirModalEditar(1, 'Usuario de prueba', 'usuario.prueba@prueba.com', 'admin', 'Operaciones', 'Jefe de Operaciones')"><i class="fas fa-edit"></i></a>
+                                                    <a href="#" class="text-primary icon-action" title="Eliminar" onclick="confirmarEliminar(1, 'Usuario de prueba')"><i class="far fa-trash-alt"></i></a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <!-- Invitado Row -->
+                                        <tr class="main-record-row border-bottom align-middle" id="user-2">
+                                            <td class="text-center text-orange fw-bold align-middle">
+                                                Juan Pérez
+                                            </td>
+                                            <td class="text-center text-orange align-middle">
+                                                jperez@empresa.com
+                                            </td>
+                                            <td class="text-center text-orange align-middle">
+                                                Invitado
+                                            </td>
+                                            <td class="text-center text-dark-blue align-middle">
+                                                28-03-2025
+                                            </td>
+                                            <td class="text-center text-dark-blue align-middle font-weight-normal" style="font-size: 0.85rem;">
+                                                0 cargas de datos<br>2 análisis leídos
+                                            </td>
+                                            <td class="text-center align-middle">
+                                                <i class="fas fa-check-circle text-success" style="font-size: 1.25rem;"></i>
+                                            </td>
+                                            <td class="text-center align-middle">
+                                                <div class="d-flex justify-content-center align-items-center" style="gap: 15px;">
+                                                    <div class="dropdown d-inline-block">
+                                                        <a href="#" class="text-primary icon-action" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Más opciones">
+                                                            <i class="fas fa-plus"></i>
+                                                        </a>
+                                                        <div class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius: 8px;">
+                                                            <a class="dropdown-item py-2 text-dark-blue" href="#"><i class="fas fa-eye me-2 text-primary" style="width: 16px;"></i> Ver actividad</a>
+                                                            <div class="dropdown-divider"></div>
+                                                            <a class="dropdown-item py-2 text-dark-blue text-warning" href="#"><i class="fas fa-ban me-2 text-warning" style="width: 16px;"></i> Suspender cuenta</a>
+                                                        </div>
+                                                    </div>
+                                                    <a href="#" class="text-primary icon-action" title="Editar" onclick="abrirModalEditar(2, 'Juan Pérez', 'jperez@empresa.com', 'guest', 'Comercial', 'Ejecutivo de Cuentas')"><i class="fas fa-edit"></i></a>
+                                                    <a href="#" class="text-primary icon-action" title="Eliminar" onclick="confirmarEliminar(2, 'Juan Pérez')"><i class="far fa-trash-alt"></i></a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </main>
+    </div>
+</div>
+
+<!-- Modal Usuario (Crear/Editar) -->
+<div class="modal fade" id="modalUsuario" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border: none; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
+            <div class="modal-body p-5">
+                <h4 class="text-center text-dark-blue fw-bold mb-4" id="modalUsuarioTitulo">Agregar Usuario</h4>
+                
+                <form id="formUsuario">
+                    <input type="hidden" id="userId">
+                    <input type="hidden" id="actionType" value="create">
+                    
+                    <div class="form-group text-center mb-3">
+                        <label class="text-dark-blue fw-bold mb-1">Nombre</label>
+                        <input type="text" class="form-control text-center custom-input" id="userName" required>
+                    </div>
+                    
+                    <div class="form-group text-center mb-3">
+                        <label class="text-dark-blue fw-bold mb-1">Email</label>
+                        <input type="email" class="form-control text-center custom-input" id="userEmail" required>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-group text-center">
+                                <label class="text-dark-blue fw-bold mb-1">Área / Departamento</label>
+                                <input type="text" class="form-control text-center custom-input" id="userArea" placeholder="Ej. Finanzas" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group text-center">
+                                <label class="text-dark-blue fw-bold mb-1">Cargo</label>
+                                <input type="text" class="form-control text-center custom-input" id="userCargo" placeholder="Ej. Analista" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group text-center mb-3">
+                        <label class="text-dark-blue fw-bold mb-1">Contraseña</label>
+                        <input type="password" class="form-control text-center custom-input" id="userPassword" placeholder="Solo si desea cambiarla (en edicion)">
+                    </div>
+                    
+                    <div class="form-group text-center mb-5">
+                        <label class="text-dark-blue fw-bold mb-1">Rol</label>
+                        <select class="form-select text-center custom-input" id="userRole" required>
+                            <option value="admin">Administrador</option>
+                            <option value="editor">Editor</option>
+                            <option value="guest">Invitado</option>
+                        </select>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between px-3 mt-4">
+                        <button type="button" class="btn btn-danger fw-bold shadow-sm px-4 py-2 custom-btn-red" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-primary fw-bold shadow-sm px-4 py-2 bg-primary-custom border-0" id="btnGuardarUser">Agregar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =====================================
+     Scripts de Bootstrap 5 Nativo
+     ===================================== -->
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+<!-- Layout Interno JS -->
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/layout.js"></script>
+<!-- custom JS -->
+<script src="../assets/js/gestion_usuarios.js"></script>
+</body>
+</html>

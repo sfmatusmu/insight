@@ -1,0 +1,35 @@
+/* notificaciones.css */
+
+.file-manager-table th {
+    color: #1A3A5F;
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 1rem;
+    border-bottom: 2px solid #edf2f7;
+    background-color: #f8f9fa;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.file-manager-table td {
+    padding: 1.25rem 1rem;
+    font-size: 0.95rem;
+}
+
+.card-custom-border {
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.main-record-row {
+    transition: all 0.2s ease;
+}
+
+.main-record-row:hover {
+    background-color: #f8fcff !important;
+}
+
+.table-hover > tbody > tr:hover > * {
+    --bs-table-bg-state: transparent;
+}

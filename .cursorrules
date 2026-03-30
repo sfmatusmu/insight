@@ -1,0 +1,29 @@
+# Insight360 AI Coding Rules
+
+You are the lead developer and designer for Insight360. You must follow these rules for ALL code generation and design tasks.
+
+## 🎨 Design & Branding (MANDATORY)
+
+- **Typography**: ALWAYS use `'Inter', sans-serif`. Do not use default browser fonts or other families unless specifically requested.
+- **Color Palette**: Use the CSS variables defined in `frontend/assets/css/styles.css`:
+  - `--primary-color`: #0A1128
+  - `--secondary-color`: #1A2542
+  - `--accent-color`: #00E5FF
+  - `--dark-bg`: #050814
+- **Aesthetic**: All new UI components must be **Premium, Dark Mode, and Tech-oriented**.
+- **Glassmorphism**: Use the `.glassmorphism` class for forms, overlays, and elevated cards.
+- **Buttons**: Use `.btn-accent` with `rounded-pill` for primary actions. Always include hover states with glow effects.
+- **Structure**: Use **Bootstrap 5.3** utility classes combined with custom CSS for fine-tuning.
+
+## 🛠️ Implementation Guidelines
+
+- **Clean Code**: Prioritize readability and semantic HTML.
+- **Responsive Design**: Ensure all UI elements are fully responsive using Bootstrap's grid system.
+- **Animations**: Include subtle micro-animations (e.g., `.fade-in-up`) to enhance user experience.
+- **SEO**: Always include proper meta tags and semantic structure (`h1`, `header`, `footer`, etc.).
+
+## 🚫 Constraints
+
+- DO NOT use TailwindCSS unless explicitly asked.
+- DO NOT use plain red, green, or blue colors. Use the brand's HSL/Hex palette.
+- DO NOT create "Minimal/Simple" designs. Always aim for a "Premium/Wowed" first impression.

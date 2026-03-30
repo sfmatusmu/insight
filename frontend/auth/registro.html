@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SEO & Security Meta Tags -->
+    <meta name="description" content="Crea tu cuenta corporativa en Insight360. Implementa IA y Business Intelligence en tu Pyme.">
+    <meta name="keywords" content="registro, crear cuenta, Insight360, Business Intelligence, IA corporativa">
+    <meta name="author" content="Insight360">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Crear Cuenta | Insight360">
+    <meta property="og:description" content="Únete a Insight360 y lleva los datos de tu empresa al siguiente nivel.">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    
+    <title>Crear Cuenta | Insight360</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-dark">
+
+    <!-- Navegación Minimalista -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav" style="padding-top: 0.8rem; padding-bottom: 0.8rem; background-color: rgba(10, 17, 40, 0.95); backdrop-filter: blur(10px); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a class="navbar-brand fw-bold m-0" href="../index.html">
+                <i class="bi bi-hexagon-fill text-accent me-2"></i>Insight360
+            </a>
+            <div>
+                <span class="text-white-50 d-none d-md-inline me-2">¿Ya tienes cuenta?</span>
+                <a class="btn btn-outline-light rounded-pill px-4 py-2" href="login.html">
+                    Ingresar
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido de Registro -->
+    <section class="flex-grow-1 d-flex align-items-center position-relative py-5 mt-5" style="background-color: var(--dark-bg); overflow: hidden;">
+        <!-- Elementos Decorativos -->
+        <div class="glass-orb shape-1" style="width: 500px; height: 500px; top: -50px; right: -50px; animation-duration: 8s;"></div>
+        <div class="glass-orb shape-2" style="width: 400px; height: 400px; bottom: -50px; left: -100px; background-color: rgba(0, 102, 255, 0.2); animation-duration: 6s;"></div>
+        
+        <div class="container position-relative z-index-1 fade-in-up visible">
+            <div class="row justify-content-center">
+                <div class="col-md-9 col-lg-7">
+                    <div class="glassmorphism p-4 p-md-5 rounded-4 shadow-lg border border-secondary" style="background: rgba(10, 17, 40, 0.6);">
+                        <div class="text-center mb-4">
+                            <i class="bi bi-building-add display-4 text-accent mb-3 d-inline-block"></i>
+                            <h2 class="fw-bold text-white mb-2">Crear Cuenta Corporativa</h2>
+                            <p class="text-white-50">Comienza a centralizar la inteligencia de negocio de tu Pyme.</p>
+                        </div>
+                        
+                        <form id="registroForm" novalidate onsubmit="event.preventDefault(); this.classList.add('was-validated');">
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6 form-floating">
+                                    <input type="text" class="form-control glass-input fw-semibold" id="nombreCompleto" placeholder="Nombre completo" required>
+                                    <label for="nombreCompleto" class="ms-2">Nombre Completo</label>
+                                    <div class="invalid-feedback ms-2">Por favor ingresa tu nombre.</div>
+                                </div>
+                                <div class="col-md-6 form-floating">
+                                    <input type="text" class="form-control glass-input fw-semibold" id="empresa" placeholder="Nombre de tu empresa" required>
+                                    <label for="empresa" class="ms-2">Nombre de la Empresa</label>
+                                    <div class="invalid-feedback ms-2">Proporciona el nombre de tu empresa.</div>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6 form-floating">
+                                    <input type="text" class="form-control glass-input fw-semibold" id="cargo" placeholder="Ej. Gerente General" required>
+                                    <label for="cargo" class="ms-2">Cargo / Posición</label>
+                                    <div class="invalid-feedback ms-2">Indica tu cargo en la empresa.</div>
+                                </div>
+                                <div class="col-md-6 form-floating">
+                                    <input type="tel" class="form-control glass-input fw-semibold" id="telefono" placeholder="+1234567890" required pattern="^\+?[0-9\s\-]{8,15}$">
+                                    <label for="telefono" class="ms-2">Teléfono Corporativo</label>
+                                    <div class="invalid-feedback ms-2">Ingresa un número telefónico válido.</div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-floating mb-3">
+                                <input type="email" class="form-control glass-input fw-semibold" id="email" placeholder="nombre@ejemplo.com" required>
+                                <label for="email">Correo Electrónico Corporativo</label>
+                                <div class="invalid-feedback">Por favor ingresa un correo electrónico válido.</div>
+                            </div>
+                            
+                            <div class="mb-4 position-relative">
+                                <div class="form-floating input-group has-validation">
+                                    <input type="password" class="form-control glass-input fw-semibold border-end-0" id="password" placeholder="Contraseña" required minlength="8" style="border-radius: var(--bs-border-radius) 0 0 var(--bs-border-radius);">
+                                    <label for="password" style="z-index: 5;">Crear Contraseña</label>
+                                    <button class="btn glass-input border-start-0 text-white-50 px-3 d-flex align-items-center" type="button" id="togglePassword" style="border-radius: 0 var(--bs-border-radius) var(--bs-border-radius) 0; border-left: none !important; margin-left: -1px;">
+                                        <i class="bi bi-eye-fill" id="toggleIcon"></i>
+                                    </button>
+                                    <div class="invalid-feedback">La contraseña debe tener al menos 8 caracteres.</div>
+                                </div>
+                                <!-- Password Strength Meter -->
+                                <div class="password-strength-container mt-2 d-none" id="pwdStrengthContainer">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <small class="text-white-50" style="font-size: 0.75rem;">Seguridad de la contraseña</small>
+                                        <small class="fw-bold" id="pwdStrengthText" style="font-size: 0.75rem;">Débil</small>
+                                    </div>
+                                    <div class="progress" style="height: 4px; background-color: rgba(255,255,255,0.1);">
+                                        <div class="progress-bar" id="pwdStrengthBar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-check mb-4">
+                                <input class="form-check-input border-secondary" type="checkbox" id="termsCheck" required style="background-color: transparent;">
+                                <label class="form-check-label text-white-50 small" for="termsCheck">
+                                    Acepto los <a href="../terminos.html" class="text-accent text-decoration-none">Términos de Servicio</a> y la <a href="../privacidad.html" class="text-accent text-decoration-none">Política de Privacidad</a> de Insight360.
+                                </label>
+                                <div class="invalid-feedback">Debes aceptar los términos para registrarte.</div>
+                            </div>
+                            
+                            <div class="d-grid mt-2 mb-3">
+                                <button class="btn btn-accent btn-lg text-uppercase rounded-pill fw-bold py-3 shadow" type="submit">Completar Registro</button>
+                            </div>
+                            
+                            <div id="authMessage" class="d-none mt-3 p-3 rounded-3 text-center small fw-semibold"></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer minificado -->
+    <footer class="footer py-4 mt-auto" style="border-top: 1px solid rgba(255,255,255,0.05); background-color: #030408;">
+        <div class="container text-center">
+            <p class="text-white-50 mb-0 small">&copy; <span id="year">2026</span> Insight360. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Scripts de API y Autenticación -->
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/auth.js"></script>
+</body>
+</html>

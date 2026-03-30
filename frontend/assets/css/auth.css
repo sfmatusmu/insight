@@ -1,0 +1,67 @@
+/* Estilos Centralizados para Módulo de Autenticación (Clean Code) */
+
+.auth-nav {
+    padding-top: 0.8rem;
+    padding-bottom: 0.8rem;
+    background-color: rgba(10, 17, 40, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.auth-section {
+    background-color: var(--dark-bg);
+    overflow: hidden;
+}
+
+.auth-orb-1 {
+    width: 500px;
+    height: 500px;
+    top: -100px;
+    right: -100px;
+    animation-duration: 6s;
+}
+
+.auth-orb-2 {
+    width: 400px;
+    height: 400px;
+    bottom: -100px;
+    left: -100px;
+    background-color: rgba(0, 102, 255, 0.2);
+    animation-duration: 5s;
+}
+
+.auth-form-card {
+    background: rgba(10, 17, 40, 0.6);
+}
+
+.auth-input-left {
+    border-radius: var(--bs-border-radius) 0 0 var(--bs-border-radius);
+}
+
+.auth-input-right {
+    border-radius: 0 var(--bs-border-radius) var(--bs-border-radius) 0;
+    border-left: none !important;
+    margin-left: -1px;
+}
+
+.auth-label-z {
+    z-index: 5;
+}
+
+.auth-small-text {
+    font-size: 0.75rem;
+}
+
+.auth-progress-bg {
+    height: 4px;
+    background-color: rgba(255,255,255,0.1);
+}
+
+.auth-check-transparent {
+    background-color: transparent;
+}
+
+.auth-footer {
+    border-top: 1px solid rgba(255,255,255,0.05);
+    background-color: #030408;
+}

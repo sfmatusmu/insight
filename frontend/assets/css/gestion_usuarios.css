@@ -1,0 +1,38 @@
+/* gestion_usuarios.css */
+
+.bg-primary-custom {
+    background-color: #1b7cf3 !important;
+    color: #ffffff !important;
+}
+
+.custom-btn-red {
+    background-color: #e74c3c !important;
+    border: none;
+    color: #fff;
+    border-radius: .3rem;
+}
+
+.custom-btn-red:hover {
+    background-color: #c0392b !important;
+}
+
+/* Modal Inputs Styling based on Mockup */
+.custom-input {
+    border: 1px solid #2c3e50;
+    border-radius: 4px; /* Slightly sharper edges like the mock */
+    padding: 0.5rem;
+    font-size: 0.95rem;
+    color: #2c3e50;
+    background-color: transparent;
+    height: auto;
+}
+
+.custom-input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(27, 124, 243, 0.25);
+    border-color: #1b7cf3;
+}
+
+.form-group label {
+    margin-bottom: 0.2rem;
+    font-size: 0.95rem;
+}

@@ -1,0 +1,74 @@
+/* gestion_archivos.css */
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f7f9fc;
+}
+
+.text-primary-custom {
+    color: #1A3A5F !important;
+}
+
+.text-dark-blue {
+    color: #2c3e50 !important;
+}
+
+.bg-light-custom {
+    background-color: #f7f9fc !important;
+}
+
+.text-orange {
+    color: #f39c12 !important; /* Adjust if a specific hex is preferred */
+}
+
+.bg-light-soft {
+    background-color: #ffffff;
+}
+
+/* Card */
+.card-custom-border {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background-color: #ffffff;
+}
+
+/* File Manager Table Defaults */
+.file-manager-table {
+    color: #4a5568;
+    font-size: 0.95rem;
+}
+
+.file-manager-table thead th {
+    border-bottom: 1px solid #e2e8f0;
+    color: #4a5568;
+    font-weight: 600;
+    padding: 1.2rem 1rem;
+}
+
+.file-manager-table tbody td {
+    padding: 1.2rem 1rem;
+    vertical-align: middle;
+}
+
+.file-manager-table tr.border-bottom td {
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.file-manager-table tr.border-top td {
+    border-top: 1px solid #e2e8f0;
+}
+
+.icon-action {
+    color: #1b7cf3 !important;
+    font-size: 1.15rem;
+    transition: color 0.2s;
+}
+
+.icon-action:hover {
+    color: #1a3a5f !important;
+}
+
+h5 {
+    color: #2c3e50;
+    font-size: 1.2rem;
+}
