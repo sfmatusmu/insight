@@ -36,3 +36,54 @@
     margin-bottom: 0.2rem;
     font-size: 0.95rem;
 }
+
+/* ── Switch Toggle Activar / Desactivar ─────────────────────────────── */
+.user-switch {
+    position: relative;
+    display: inline-block;
+    width: 46px;
+    height: 24px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.user-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.user-switch .slider {
+    position: absolute;
+    inset: 0;
+    background-color: #e74c3c;   /* Rojo = inactivo */
+    border-radius: 34px;
+    transition: background-color 0.3s ease;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.user-switch .slider::before {
+    content: "";
+    position: absolute;
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+}
+
+.user-switch input:checked + .slider {
+    background-color: #27ae60;   /* Verde = activo */
+}
+
+.user-switch input:checked + .slider::before {
+    transform: translateX(22px);
+}
+
+.user-switch:hover .slider {
+    filter: brightness(0.92);
+}

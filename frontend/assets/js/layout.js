@@ -40,24 +40,39 @@ async function rehidratarSesion() {
         return false;
     }
 
-    try {
-        const perfil = await API.get('/api/auth/me');
-        if (!perfil) throw new Error("Sin perfil");
-
-        AppState.user = perfil;
-        console.info(`[Layout] Sesión rehidratada: ${perfil.nombre} (${perfil.rol})`);
-        return true;
-    } catch (err) {
-        console.warn('[Layout] El backend no responde o no estás logueado. Inyectando sesión de Dev local...', err);
-        // INYECCIÓN DEV LOCAL
+    // ── Demo bypass: token ficticio, usar usuario demo local ──────────────
+    const token = sessionStorage.getItem('access_token');
+    if (token === 'demo-access-token') {
         AppState.user = {
             id: 'dev-001',
+            id_rol: 1,
             email: 'admin@insight360.cl',
             nombre: 'Administrador Demo',
-            rol: 'admin',
-            empresa: 'Insight360 Corp'
+            nombres: 'Administrador',
+            apellidoPaterno: 'Demo',
+            rol: 'Administrador',
+            ultima_sesion: null
         };
-        return true; // Siempre verdadero en modo dev
+        console.info('[Layout] Modo Demo activado.');
+        return true;
+    }
+
+    // ── Autenticación real: llamar /api/v1/me con el JWT ─────────────────
+    try {
+        const perfil = await API.get('/api/v1/me');
+        if (!perfil) throw new Error('Sin perfil');
+
+        // Normalizar campos que el backend devuelve distintos a lo que usa el layout
+        const roleMap = { 1: 'Administrador', 2: 'Editor', 3: 'Invitado' };
+        perfil.nombre = `${perfil.nombres || ''} ${perfil.apellidoPaterno || ''}`.trim();
+        perfil.rol    = roleMap[perfil.id_rol] || 'Invitado';
+
+        AppState.user = perfil;
+        console.info(`[Layout] Sesión rehidratada: ${perfil.nombre} (Rol: ${perfil.rol})`);
+        return true;
+    } catch (err) {
+        console.warn('[Layout] No se pudo rehidratar la sesión:', err.message);
+        return false;
     }
 }
 
@@ -72,15 +87,57 @@ async function rehidratarSesion() {
 function renderUserProfile() {
     if (!AppState.user) return;
 
-    const { nombre, rol, email } = AppState.user;
+    const { nombre, rol, email, ultima_sesion } = AppState.user;
 
-    const nameEls  = document.querySelectorAll('#navUserName, .nav-user-name');
-    const roleEls  = document.querySelectorAll('#navUserRole, .nav-user-role');
-    const emailEls = document.querySelectorAll('#navUserEmail, .nav-user-email');
+    // Formatear última sesión
+    let lastSessionText = 'Primera vez';
+    if (ultima_sesion) {
+        const d = new Date(ultima_sesion);
+        const dd  = String(d.getDate()).padStart(2,'0');
+        const mm  = String(d.getMonth()+1).padStart(2,'0');
+        const yy  = d.getFullYear();
+        const hh  = String(d.getHours()).padStart(2,'0');
+        const min = String(d.getMinutes()).padStart(2,'0');
+        lastSessionText = `${dd}/${mm}/${yy} ${hh}:${min}`;
+    }
 
-    nameEls.forEach(el  => { el.textContent = nombre; });
-    roleEls.forEach(el  => { el.textContent = rol;    });
-    emailEls.forEach(el => { el.textContent = email;  });
+    // Actualizar todos los elementos del navbar / dropdown
+    document.querySelectorAll('#navUserName, .nav-user-name').forEach(el => { el.textContent = nombre || ''; });
+    document.querySelectorAll('#navUserRole, .nav-user-role').forEach(el => { el.textContent = rol    || ''; });
+    document.querySelectorAll('#navUserEmail, .nav-user-email').forEach(el => { el.textContent = email  || ''; });
+    document.querySelectorAll('.nav-user-last-session').forEach(el => {
+        el.textContent = `Última sesión: ${lastSessionText}`;
+    });
+
+    // ── Campos del formulario de Perfil (si estamos en perfil_usuario.html) ──
+    const profName  = document.getElementById('profName');
+    const profEmail = document.getElementById('profEmail');
+    if (profName)  profName.value  = nombre || '';
+    if (profEmail) profEmail.value = email  || '';
+
+    // ── Inyectar última sesión DEBAJO del nombre en la barra superior ─────
+    // (sin modificar los HTML: se crea dinámicamente junto al span .nav-user-name
+    //  que está dentro del botón dropdown-toggle del navbar)
+    document.querySelectorAll('a.dropdown-toggle .nav-user-name').forEach(nameSpan => {
+        // Envolver nombre + última sesión en un div flex-column
+        if (!nameSpan.parentElement.classList.contains('nav-user-info-wrap')) {
+            const wrap = document.createElement('div');
+            wrap.className = 'nav-user-info-wrap d-flex flex-column align-items-start';
+            nameSpan.parentNode.insertBefore(wrap, nameSpan);
+            wrap.appendChild(nameSpan);
+        }
+        const wrap = nameSpan.parentElement;
+
+        // Crear o reutilizar el span de última sesión
+        let lastEl = wrap.querySelector('.nav-last-top');
+        if (!lastEl) {
+            lastEl = document.createElement('span');
+            lastEl.className = 'nav-last-top';
+            lastEl.style.cssText = 'font-size:0.68rem;color:#6c757d;font-weight:400;line-height:1.1;';
+            wrap.appendChild(lastEl);
+        }
+        lastEl.textContent = `Últ. sesión: ${lastSessionText}`;
+    });
 }
 
 // ──────────────────────────────────────────────
@@ -280,12 +337,55 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Guard de autenticación
     checkAuthGuard(isAuth);
 
-    // Si hay sesión: renderizar UI y conectar SSE
+    // Si hay sesión: renderizar UI, aplicar roles y conectar SSE
     if (isAuth) {
         renderUserProfile();
+        applyRBAC();
         conectarNotificacionesSSE();
+        // Notificar a scripts de página que la sesión está lista con datos reales
+        window.dispatchEvent(new CustomEvent('session:ready', { detail: AppState.user }));
     }
 });
+
+// ──────────────────────────────────────────────
+// 8. Role-Based Access Control (RBAC) UI
+// ──────────────────────────────────────────────
+function applyRBAC() {
+    if (!AppState.user) return;
+
+    // id_rol del backend (1=Admin, 2=Editor, 3=Invitado). Parseamos a Número por seguridad.
+    const roleId = Number(AppState.user.id_rol) || 3;
+    console.info(`[RBAC] Aplicando control de acceso para Rol ID: ${roleId}`);
+
+    // Reglas de acceso por página
+    const PAGE_RULES = {
+        'gestion_usuarios.html': [1],          // Solo Admin
+        'gestion_archivos.html': [1, 2],       // Admin y Editor
+    };
+
+    // Nodos en el Sidebar aplicables en cualquier vista HTML
+    const navUsersElements = document.querySelectorAll('#nav-menu-users');
+    const navFilesElements = document.querySelectorAll('#nav-menu-files');
+
+    if (roleId === 3) {
+        // Invitado → No ve panel de usuarios ni archivos
+        navUsersElements.forEach(el => { el.style.display = 'none'; });
+        navFilesElements.forEach(el => { el.style.display = 'none'; });
+    } else if (roleId === 2) {
+        // Editor → Ve archivos, NO ve panel de usuarios
+        navUsersElements.forEach(el => { el.style.display = 'none'; });
+    }
+
+    // ── Protección contra acceso directo por URL ──
+    const currentPage = window.location.pathname.split('/').pop();
+    const allowedRoles = PAGE_RULES[currentPage];
+
+    if (allowedRoles && !allowedRoles.includes(roleId)) {
+        console.warn(`[RBAC] Acceso denegado a "${currentPage}" para Rol ID ${roleId}. Redirigiendo...`);
+        window.location.replace('dashboard.html');
+    }
+}
+
 
 // Exponer AppState globalmente para que otros scripts de página puedan consultarlo
 window.AppState = AppState;

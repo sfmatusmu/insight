@@ -206,7 +206,7 @@ const AuthModule = (function () {
         // --- AUTENTICACIÓN REAL CONTRA EL BACKEND ---
         try {
             // FastAPI OAuth2PasswordRequestForm espera 'username' (email) y 'password'
-            const data = await API.postForm('/api/auth/login', {
+            const data = await API.postForm('/api/v1/login/access-token', {
                 username: email,
                 password: password
             });
@@ -272,6 +272,17 @@ const AuthModule = (function () {
 
     // --- INICIALIZACIÓN ---
     const init = () => {
+        // Inicializar password listener a travez de todas las vistas
+        const pwdField = document.getElementById('password');
+        if (pwdField && document.getElementById('pwdStrengthContainer')) {
+            pwdField.addEventListener('input', handlePasswordInput);
+        }
+        
+        const toggleBtn = document.getElementById('togglePassword');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', togglePasswordVisibility);
+        }
+
         // Inicializar formulario de login
         const loginForm = document.getElementById('loginForm');
         if (loginForm) {

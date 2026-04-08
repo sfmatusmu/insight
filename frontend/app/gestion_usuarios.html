@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -40,10 +40,10 @@
             <li class="nav-item">
                 <a href="analisis_bi.html" class="nav-link"><i class="fas fa-chart-bar fa-fw me-2"></i> Análisis BI</a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item" id="nav-menu-files">
                 <a href="gestion_archivos.html" class="nav-link"><i class="fas fa-file-archive fa-fw me-2"></i> Gestión archivos</a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item" id="nav-menu-users">
                 <a href="gestion_usuarios.html" class="nav-link active" aria-current="page"><i class="fas fa-users fa-fw me-2"></i> Gestión usuarios</a>
             </li>
             <li class="mt-4 mb-2"><span class="text-uppercase text-muted fw-bold ms-3" style="font-size: 0.70rem; letter-spacing: 1px;">CUENTA</span></li>
@@ -105,10 +105,10 @@
                     <div class="dropdown">
                         <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle user-menu-btn" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-user-circle fs-4 text-primary me-2"></i>
-                            <span class="text-dark fw-bold d-none d-md-inline">Sergio Matus</span>
+                            <span class="text-dark fw-bold d-none d-md-inline nav-user-name">Sergio Matus</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-3 p-0" style="border-radius: 12px; overflow: hidden; width: 280px;">
-                            <li class="text-center py-4 bg-primary text-white"><i class="fas fa-user-circle fa-4x mb-2"></i><h5 class="fw-bold mb-0">Sergio Matus</h5><small>Administrador</small></li>
+                            <li class="text-center py-4 bg-primary text-white"><i class="fas fa-user-circle fa-4x mb-2"></i><h5 class="fw-bold mb-0 nav-user-name">Sergio Matus</h5><small class="nav-user-role">Administrador</small></li>
                             <li class="p-3">
                                 <a href="perfil_usuario.html" class="btn btn-light w-100 text-start fw-bold mb-2 shadow-sm border"><i class="fas fa-user-edit me-2"></i> Perfil</a>
                                 <a href="../auth/login.html" class="btn btn-danger w-100 fw-bold shadow-sm border-0"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a>
@@ -150,80 +150,7 @@
                                         </tr>
                                     </thead>
                                     <tbody id="tablaUsuarios">
-                                        <!-- Main Row -->
-                                        <tr class="main-record-row border-bottom align-middle" id="user-1">
-                                            <td class="text-center text-orange fw-bold align-middle">
-                                                Usuario de prueba
-                                            </td>
-                                            <td class="text-center text-orange align-middle">
-                                                usuario.prueba@prueba.com
-                                            </td>
-                                            <td class="text-center text-orange align-middle">
-                                                Administrador
-                                            </td>
-                                            <td class="text-center text-dark-blue align-middle">
-                                                15-02-2025
-                                            </td>
-                                            <td class="text-center text-dark-blue align-middle font-weight-normal" style="font-size: 0.85rem;">
-                                                12 cargas de datos<br>5 análisis generados
-                                            </td>
-                                            <td class="text-center align-middle">
-                                                <i class="fas fa-check-circle text-success" style="font-size: 1.25rem;"></i>
-                                            </td>
-                                            <td class="text-center align-middle">
-                                                <div class="d-flex justify-content-center align-items-center" style="gap: 15px;">
-                                                    <div class="dropdown d-inline-block">
-                                                        <a href="#" class="text-primary icon-action" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Más opciones">
-                                                            <i class="fas fa-plus"></i>
-                                                        </a>
-                                                        <div class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius: 8px;">
-                                                            <a class="dropdown-item py-2 text-dark-blue" href="#"><i class="fas fa-eye me-2 text-primary" style="width: 16px;"></i> Ver actividad</a>
-                                                            <div class="dropdown-divider"></div>
-                                                            <a class="dropdown-item py-2 text-dark-blue text-warning" href="#"><i class="fas fa-ban me-2 text-warning" style="width: 16px;"></i> Suspender cuenta</a>
-                                                        </div>
-                                                    </div>
-                                                    <a href="#" class="text-primary icon-action" title="Editar" onclick="abrirModalEditar(1, 'Usuario de prueba', 'usuario.prueba@prueba.com', 'admin', 'Operaciones', 'Jefe de Operaciones')"><i class="fas fa-edit"></i></a>
-                                                    <a href="#" class="text-primary icon-action" title="Eliminar" onclick="confirmarEliminar(1, 'Usuario de prueba')"><i class="far fa-trash-alt"></i></a>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <!-- Invitado Row -->
-                                        <tr class="main-record-row border-bottom align-middle" id="user-2">
-                                            <td class="text-center text-orange fw-bold align-middle">
-                                                Juan Pérez
-                                            </td>
-                                            <td class="text-center text-orange align-middle">
-                                                jperez@empresa.com
-                                            </td>
-                                            <td class="text-center text-orange align-middle">
-                                                Invitado
-                                            </td>
-                                            <td class="text-center text-dark-blue align-middle">
-                                                28-03-2025
-                                            </td>
-                                            <td class="text-center text-dark-blue align-middle font-weight-normal" style="font-size: 0.85rem;">
-                                                0 cargas de datos<br>2 análisis leídos
-                                            </td>
-                                            <td class="text-center align-middle">
-                                                <i class="fas fa-check-circle text-success" style="font-size: 1.25rem;"></i>
-                                            </td>
-                                            <td class="text-center align-middle">
-                                                <div class="d-flex justify-content-center align-items-center" style="gap: 15px;">
-                                                    <div class="dropdown d-inline-block">
-                                                        <a href="#" class="text-primary icon-action" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Más opciones">
-                                                            <i class="fas fa-plus"></i>
-                                                        </a>
-                                                        <div class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius: 8px;">
-                                                            <a class="dropdown-item py-2 text-dark-blue" href="#"><i class="fas fa-eye me-2 text-primary" style="width: 16px;"></i> Ver actividad</a>
-                                                            <div class="dropdown-divider"></div>
-                                                            <a class="dropdown-item py-2 text-dark-blue text-warning" href="#"><i class="fas fa-ban me-2 text-warning" style="width: 16px;"></i> Suspender cuenta</a>
-                                                        </div>
-                                                    </div>
-                                                    <a href="#" class="text-primary icon-action" title="Editar" onclick="abrirModalEditar(2, 'Juan Pérez', 'jperez@empresa.com', 'guest', 'Comercial', 'Ejecutivo de Cuentas')"><i class="fas fa-edit"></i></a>
-                                                    <a href="#" class="text-primary icon-action" title="Eliminar" onclick="confirmarEliminar(2, 'Juan Pérez')"><i class="far fa-trash-alt"></i></a>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                        <!-- La data se inyectará desde gestion_usuarios.js de forma dinámica mediante la API -->
                                     </tbody>
                                 </table>
                             </div>
@@ -248,33 +175,53 @@
                     <input type="hidden" id="actionType" value="create">
                     
                     <div class="form-group text-center mb-3">
-                        <label class="text-dark-blue fw-bold mb-1">Nombre</label>
+                        <label class="text-dark-blue fw-bold mb-1">Nombres</label>
                         <input type="text" class="form-control text-center custom-input" id="userName" required>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-group text-center">
+                                <label class="text-dark-blue fw-bold mb-1">Ap. Paterno</label>
+                                <input type="text" class="form-control text-center custom-input" id="userApPaterno" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group text-center">
+                                <label class="text-dark-blue fw-bold mb-1">Ap. Materno</label>
+                                <input type="text" class="form-control text-center custom-input" id="userApMaterno">
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="form-group text-center mb-3">
                         <label class="text-dark-blue fw-bold mb-1">Email</label>
                         <input type="email" class="form-control text-center custom-input" id="userEmail" required>
                     </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <div class="form-group text-center">
-                                <label class="text-dark-blue fw-bold mb-1">Área / Departamento</label>
-                                <input type="text" class="form-control text-center custom-input" id="userArea" placeholder="Ej. Finanzas" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group text-center">
-                                <label class="text-dark-blue fw-bold mb-1">Cargo</label>
-                                <input type="text" class="form-control text-center custom-input" id="userCargo" placeholder="Ej. Analista" required>
-                            </div>
-                        </div>
+
+                    <div class="form-group text-center mb-3">
+                        <label class="text-dark-blue fw-bold mb-1">Usuario (Login)</label>
+                        <input type="text" class="form-control text-center custom-input" id="userUsername" required>
                     </div>
 
                     <div class="form-group text-center mb-3">
                         <label class="text-dark-blue fw-bold mb-1">Contraseña</label>
-                        <input type="password" class="form-control text-center custom-input" id="userPassword" placeholder="Solo si desea cambiarla (en edicion)">
+                        <div class="input-group">
+                            <input type="password" class="form-control text-center custom-input" id="userPassword" placeholder="En edición: Op.", style="border-right: none;">
+                            <button class="btn btn-outline-secondary toggle-pass-btn" type="button" onclick="togglePasswordVisibility('userPassword')" style="border-radius: 0 8px 8px 0; border-color: #dee2e6; color: #6c757d;">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group text-center mb-3">
+                        <label class="text-dark-blue fw-bold mb-1">Repetir Contraseña</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control text-center custom-input" id="userPasswordConfirm" placeholder="Reingrese la clave", style="border-right: none;">
+                            <button class="btn btn-outline-secondary toggle-pass-btn" type="button" onclick="togglePasswordVisibility('userPasswordConfirm')" style="border-radius: 0 8px 8px 0; border-color: #dee2e6; color: #6c757d;">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="form-group text-center mb-5">
@@ -304,9 +251,9 @@
 <!-- SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
 <!-- Layout Interno JS -->
-<script src="../assets/js/api.js"></script>
-<script src="../assets/js/layout.js"></script>
+<script src="../assets/js/api.js?v=2"></script>
+<script src="../assets/js/layout.js?v=2"></script>
 <!-- custom JS -->
-<script src="../assets/js/gestion_usuarios.js"></script>
+<script src="../assets/js/gestion_usuarios.js?v=2"></script>
 </body>
 </html>

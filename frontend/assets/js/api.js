@@ -216,6 +216,14 @@ const API = (() => {
             body: JSON.stringify(body),
         });
 
+    /** PATCH request con body JSON */
+    const patch = (path, body = {}, options = {}) =>
+        _request(path, {
+            ...options,
+            method: 'PATCH',
+            body: JSON.stringify(body),
+        });
+
     /** DELETE request */
     const del = (path, options = {}) =>
         _request(path, { ...options, method: 'DELETE' });
@@ -554,6 +562,7 @@ const API = (() => {
         post,
         postForm,
         put,
+        patch,
         delete: del,
         postFile,
         stream,

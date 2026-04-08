@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -38,10 +38,10 @@
             <li class="nav-item">
                 <a href="analisis_bi.html" class="nav-link"><i class="fas fa-chart-bar fa-fw me-2"></i> Análisis BI</a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item" id="nav-menu-files">
                 <a href="gestion_archivos.html" class="nav-link"><i class="fas fa-file-archive fa-fw me-2"></i> Gestión archivos</a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item" id="nav-menu-users">
                 <a href="gestion_usuarios.html" class="nav-link"><i class="fas fa-users fa-fw me-2"></i> Gestión usuarios</a>
             </li>
             <li class="mt-4 mb-2"><span class="text-uppercase text-muted fw-bold ms-3" style="font-size: 0.70rem; letter-spacing: 1px;">CUENTA</span></li>
@@ -103,10 +103,10 @@
                     <div class="dropdown">
                         <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle user-menu-btn" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-user-circle fs-4 text-primary me-2"></i>
-                            <span class="text-dark fw-bold d-none d-md-inline">Sergio Matus</span>
+                            <span class="text-dark fw-bold d-none d-md-inline nav-user-name">Sergio Matus</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-3 p-0" style="border-radius: 12px; overflow: hidden; width: 280px;">
-                            <li class="text-center py-4 bg-primary text-white"><i class="fas fa-user-circle fa-4x mb-2"></i><h5 class="fw-bold mb-0">Sergio Matus</h5><small>Administrador</small></li>
+                            <li class="text-center py-4 bg-primary text-white"><i class="fas fa-user-circle fa-4x mb-2"></i><h5 class="fw-bold mb-0 nav-user-name">Sergio Matus</h5><small class="nav-user-role">Administrador</small></li>
                             <li class="p-3">
                                 <a href="perfil_usuario.html" class="btn btn-light w-100 text-start fw-bold mb-2 shadow-sm border"><i class="fas fa-user-edit me-2"></i> Perfil</a>
                                 <a href="../auth/login.html" class="btn btn-danger w-100 fw-bold shadow-sm border-0"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a>
@@ -126,8 +126,8 @@
                     <div class="card card-custom-border shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
                         <div class="card-header text-center py-5" style="background-color: #1b7cf3; border: none;">
                             <i class="fas fa-user-circle fa-5x text-white mb-3 shadow-sm rounded-circle" style="background-color: rgba(255,255,255,0.2);"></i>
-                            <h3 class="mb-0 fw-bold text-white">Sergio Matus</h3>
-                            <p class="mb-0 text-white" style="opacity: 0.9;">Administrador</p>
+                            <h3 class="mb-0 fw-bold text-white nav-user-name" id="profCardName">—</h3>
+                            <p class="mb-0 text-white nav-user-role" id="profCardRole" style="opacity: 0.9;">—</p>
                         </div>
                         <div class="card-body p-5 bg-white">
                             <form id="profileForm">
@@ -140,14 +140,14 @@
                                     <label class="text-dark-blue fw-bold mb-2">Nombre Completo</label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-light border-end-0"><i class="fas fa-user text-secondary"></i></span>
-                                        <input type="text" class="form-control custom-input border-start-0 ps-0" id="profName" value="Sergio Matus">
+                                        <input type="text" class="form-control custom-input border-start-0 ps-0" id="profName" placeholder="Cargando...">
                                     </div>
                                 </div>
                                 <div class="form-group mb-4">
                                     <label class="text-dark-blue fw-bold mb-2">Correo Electrónico</label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-light border-end-0"><i class="fas fa-envelope text-secondary"></i></span>
-                                        <input type="email" class="form-control custom-input border-start-0 ps-0" id="profEmail" value="smatus@empresa.com" disabled title="Contacte a soporte para cambiar el email base">
+                                        <input type="email" class="form-control custom-input border-start-0 ps-0" id="profEmail" placeholder="Cargando..." disabled title="Contacte a soporte para cambiar el email base">
                                     </div>
                                 </div>
 
